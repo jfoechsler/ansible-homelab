@@ -1,0 +1,38 @@
+# data_disk
+- name: install lvm2
+  dnf:
+    pkg: lvm2
+    state: latest
+
+# bootstrap storage
+- name: data lvm volume group
+  when:
+    - data_dev is defined
+  lvg:
+    vg: "{{ data_vg }}"
+    pvs: "{{ data_dev }}"
+    pesize: 64
+
+- name: data0 lvm volume
+  when:
+    - data_dev is defined
+    - data0_lv_size is defined
+  lvol:
+    lv: "data0"
+    vg: "{{ data_vg }}"
+    size: "{{ data0_lv_size }}"
+    pvs: "{{ data_dev }}"
+
+- name: filesystem on data volume
+  when: data_dev is defined
+  filesystem:
+    fstype: "xfs"
+    dev: /dev/{{ data_vg }}/data0
+
+- name: mount data volume
+  when: data_dev is defined
+  mount:
+    name: "{{ data0_path }}"
+    src: /dev/{{ data_vg }}/data0
+    state: mounted
+    fstype: "xfs"

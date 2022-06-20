@@ -1,0 +1,19 @@
+
+- name: upgrade all packages
+  dnf: name=* state=latest
+  register: dnf
+
+- name: reboot nodes
+  shell: sleep 2 && shutdown -r now "Ansible reboot performed for package updates"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: dnf.changed
+  register: rebooting
+
+- name: wait for server to come back
+  become: false
+  wait_for_connection:
+    timeout: 300
+    delay: 30
+  when: rebooting.changed

@@ -1,0 +1,11 @@
+vms: []
+vm_data: {}
+create_vms: []
+updated_vms: []
+vmfs_current: []
+vmfs_desired: []
+vm_networks: []
+vm_inventory: {}
+create_networks: []
+vm_mounts_current: []
+vm_mounts_desired: []

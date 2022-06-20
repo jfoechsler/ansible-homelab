@@ -1,0 +1,12 @@
+#cloud-config
+ssh_pwauth: False
+preserve_hostname: true
+ssh_authorized_keys:
+  - {{ ssh_public_key }}
+
+#users:
+#  - default
+#  - name: joe
+#    ssh_authorized_keys:
+#      - {{ ssh_public_key }}
+#    groups: wheel

@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+
+{% for host in groups['vms'] %}
+{% set ip = loop.index + 150 %}
+{{ prefix_24 }}.{{ ip }} {{ hostvars[host].ansible_host }}
+{% endfor %}

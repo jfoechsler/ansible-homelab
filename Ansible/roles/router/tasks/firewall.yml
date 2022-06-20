@@ -1,0 +1,47 @@
+- name: Enable internal zone
+  firewalld:
+    interface: "{{ inside_nic }}"
+    zone: internal
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Enable external zone
+  firewalld:
+    interface: "{{ outside_nic }}"
+    zone: external
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Remove services in firewall external
+  firewalld:
+    service: "{{ item }}"
+    state: disabled
+    zone: external
+    permanent: true
+    immediate: true
+  loop:
+    - ssh
+
+- name: Create wlan zone
+  firewalld:
+    zone: wlan
+    state: present
+    permanent: true
+  register: wlan_zone
+
+- name: Reload firewall to enable wlan zone
+  command: firewall-cmd --reload
+  when: wlan_zone.changed
+
+- name: Allow services in firewall
+  firewalld:
+    service: "{{ item.1 }}"
+    state: enabled
+    zone: "{{ item.0 }}"
+    permanent: true
+    immediate: true
+  with_nested:
+    - ['internal', 'wlan']
+    - ['dns', 'dhcp', 'samba', 'vnc-server']

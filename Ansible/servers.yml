@@ -1,0 +1,7 @@
+- hosts: servers
+  become: True
+  roles:
+    - base
+    - lvm
+    - fileserver
+    - libvirtd

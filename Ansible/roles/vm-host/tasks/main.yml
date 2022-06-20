@@ -1,0 +1,24 @@
+- name: Install packages
+  dnf:
+    name: "
+      genisoimage,
+      python3-lxml,
+      python3-libvirt
+      "
+    state: present
+
+- name: libvirt-guests conf
+  template:
+    src: libvirt-guests.j2
+    dest: /etc/sysconfig/libvirt-guests
+
+- name: libvirt-guests service
+  systemd:
+    name: libvirt-guests
+    state: started
+    enabled: yes
+
+- include_tasks: networks.yml
+- include_tasks: vms.yml
+- include_tasks: vm-data.yml
+- include_tasks: vmfs.yml

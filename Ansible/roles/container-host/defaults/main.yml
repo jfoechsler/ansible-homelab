@@ -1,0 +1,7 @@
+defaults:
+  env: {}
+containers: []
+dnsmasq_conf: ""
+ctr_dict: {}
+service_start: {}
+volumes_list: {}

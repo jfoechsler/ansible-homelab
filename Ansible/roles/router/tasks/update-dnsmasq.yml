@@ -1,0 +1,20 @@
+---
+
+- name: dnsmasq vms conf
+  template:
+    src: dnsmasq-vms.conf.j2
+    dest: /etc/dnsmasq.d/vms.conf
+  notify: dnsmasq restart
+
+- name: add_hosts file
+  template:
+    src: add_hosts.j2
+    dest: /etc/dnsmasq.d/add_hosts
+  notify: dnsmasq restart
+
+- name: dnsmasq container directives
+  copy:
+    content: "{{ dnsmasq_containers_conf }}"
+    dest: /etc/dnsmasq.d/containers.conf
+  notify: dnsmasq restart
+  when: dnsmasq_containers_conf is defined

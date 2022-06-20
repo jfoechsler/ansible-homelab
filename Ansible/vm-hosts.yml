@@ -1,0 +1,18 @@
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: vm-host
+        tasks_from: inventory
+
+- hosts: routers
+  become: True
+  tasks:
+    - include_role:
+        name: router
+        tasks_from: update-dnsmasq
+
+- hosts: vm_hosts
+  become: True
+  roles:
+    - vm-host

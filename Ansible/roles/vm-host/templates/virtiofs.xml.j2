@@ -1,0 +1,9 @@
+ <filesystem type='mount' accessmode='passthrough'>
+  <driver type='virtiofs' queue='1024'/>
+  <source dir='{{ data0_path }}/vmfs'/>
+  <target dir='vmfs'/>
+  <binary path='/usr/libexec/virtiofsd' xattr='on'>
+    <cache mode='always'/>
+    <lock posix='on' flock='on'/>
+  </binary>
+</filesystem>

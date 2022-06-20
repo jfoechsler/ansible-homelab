@@ -1,0 +1,27 @@
+- name: Enable testing repo
+  ini_file:
+    dest: "/etc/yum.repos.d/fedora-updates-testing.repo"
+    section: "updates-testing"
+    option: "enabled"
+    value: "1"
+  when: updates_testing_enabled
+
+- name: Inotify watches increase
+  sysctl:
+    name: fs.inotify.max_user_watches
+    value: "204800"
+
+- name: SSH key
+  authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ ssh_public_key }}"
+  when: ansible_user is defined
+
+- name: Machine info
+  template:
+    src: machine-info.j2
+    dest: /etc/machine-info
+  when: chassis is defined
+
+- debug:
+    msg: "{{ ansible_devices }}"

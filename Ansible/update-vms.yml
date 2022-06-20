@@ -1,0 +1,12 @@
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: vm-host
+        tasks_from: inventory
+
+- hosts: "{{ staging | default(false) | bool | ternary('staging_vms', 'vms') }}"
+  become: True
+  serial: 1
+  tasks:
+    - include_tasks: library/updatereboot.yml

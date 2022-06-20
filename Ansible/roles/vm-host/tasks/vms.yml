@@ -1,0 +1,98 @@
+# create LV
+- name: vm lvm volume
+  lvol:
+    lv: "vm-{{ item.name }}"
+    vg: "{{ data_vg }}"
+    size: "{{ item.disk }}G"
+  with_items: "{{ create_vms }}"
+
+# copy image
+#- copy:
+#    src: "{{ vm_images }}/{{ vm_image[item.image] }}"
+#    dest: /mnt/data0/{{ vm_image[item.image] }}
+#  with_items: "{{ create_vms }}"
+
+# Write image to lv
+- shell: xz -dc {{ vm_images }}/{{ vm_image[item.image] }} > /dev/{{ data_vg }}/vm-{{ item.name }}
+  with_items: "{{ create_vms }}"
+
+- file:
+    path: "{{ data0_path }}/vmhost/{{ item.name }}"
+    state: directory
+  with_items: "{{ create_vms }}"
+
+- template:
+    src: "{{ item.1 }}.j2"
+    dest: "{{ data0_path }}/vmhost/{{ item.0.name }}/{{ item.1 }}"
+  with_nested:
+    - "{{ create_vms }}"
+    - ['meta-data', 'user-data']
+
+- shell: /usr/bin/genisoimage -output /var/lib/libvirt/images/{{ item.name }}_cloud-init.iso -volid cidata -joliet -rock user-data meta-data
+  args:
+    chdir: "{{ data0_path }}/vmhost/{{ item.name }}"
+  with_items:
+    - "{{ create_vms }}"
+
+- file:
+    path: "{{ data0_path }}/vmhost/{{ item.0.name }}/{{ item.1 }}"
+    state: absent
+  with_nested:
+    - "{{ create_vms }}"
+    - ['meta-data', 'user-data']
+
+- include_tasks: update-vm-definition.yml
+  with_items:
+    - "{{ vms }}"
+  loop_control:
+    loop_var: item
+  when:
+    - item.host == inventory_hostname
+
+- name: VMs state
+  virt:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+  with_items: "{{ vms }}"
+  when:
+    - item.host == inventory_hostname
+
+- name: Load any just created VMs
+  command: /usr/bin/virsh dumpxml {{ item.name }}
+  register: dom_xml
+  with_items:
+    - "{{ updated_vms }}"
+
+- set_fact:
+    "dom_dict_{{ item.item.name }}": "{{ item.stdout | ansible.utils.from_xml }}"
+  with_items:
+    - "{{ dom_xml.results }}"
+
+- name: Undefine VMs for deletion
+  virt:
+    command: undefine
+    name: "{{ item.name }}"
+  with_items: "{{ vms }}"
+  when:
+    - item.host == inventory_hostname
+    - item.name in registered_vms.list_vms
+    - item.state in ["destroyed", "shutdown"]
+    - item.delete_on_termination | default(false) | bool
+  register: undefined
+
+- name: Deactive undefined VMs LV
+  lvol:
+    lv: "vm-{{ item.item.name }}"
+    vg: "{{ data_vg }}"
+    active: false
+  with_items: "{{ undefined.results }}"
+  when: item.undefine is defined
+
+- name: Remove undefined VMs LV
+  lvol:
+    lv: "vm-{{ item.item.name }}"
+    vg: "{{ data_vg }}"
+    state: absent
+    force: true
+  with_items: "{{ undefined.results }}"
+  when: item.undefine is defined

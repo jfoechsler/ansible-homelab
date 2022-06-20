@@ -1,0 +1,4 @@
+---
+
+- name: smb reload
+  command: smbcontrol all reload-config

@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+[global]
+    workgroup = {{ smb_workgroup }}
+    #hosts allow = 127. 192.168.1.
+[homes]
+    comment = Home Directories
+    browseable = no
+    writable = yes
+
+{% if data0_lv_size is defined %}
+[Data]
+    browseable = yes
+    writable = yes
+    path = {{ data0_path }}/share
+{% endif %}

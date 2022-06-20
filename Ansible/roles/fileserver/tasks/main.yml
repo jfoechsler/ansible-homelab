@@ -1,0 +1,67 @@
+---
+
+- name: Install packages
+  dnf:
+    name: "
+      samba,
+      python3-libselinux,
+      python3-libsemanage,
+      syncthing
+      "
+    state: present
+
+# samba_share_t selinux
+
+- name: Allow home dirs
+  seboolean:
+    name: samba_enable_home_dirs
+    state: yes
+    persistent: yes
+
+# Required for share of automounted drive
+- name: Allow all dirs
+  seboolean:
+    name: samba_export_all_rw
+    state: yes
+    persistent: yes
+
+- name: Smb conf
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+  notify: smb reload
+
+- name: Nmb service
+  systemd:
+    name: "nmb"
+    state: "started"
+    enabled: "yes"
+
+- name: Smb service
+  systemd:
+    name: "smb"
+    state: "started"
+    enabled: "yes"
+
+- name: data0 share
+  when:
+    - data_dev is defined
+    - data0_lv_size is defined
+  file:
+    path: "{{ data0_path }}/share"
+    state: directory
+    owner: "{{ owner }}"
+    group: "{{ owner }}"
+  register: data0_share
+
+- name: Allow samba access to share
+  sefcontext:
+    target: '{{ data0_path }}/share(/.*)?'
+    setype: samba_share_t
+    state: present
+  register: filecontext
+  when: data0_share.skipped is false
+
+- name: Run restore context if needed
+  shell: restorecon -R -v {{ data0_path }}/share
+  when: filecontext.changed

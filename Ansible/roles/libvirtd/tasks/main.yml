@@ -1,0 +1,11 @@
+- name: Install packages
+  dnf:
+    name: "
+      libvirt-daemon-kvm
+      "
+    state: present
+
+- name: libvirt-daemon
+  systemd:
+    name: libvirtd
+    enabled: yes

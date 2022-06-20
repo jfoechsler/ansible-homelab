@@ -1,0 +1,52 @@
+- name: List VMs
+  virt:
+    command: list_vms
+  register: registered_vms
+
+- command: /usr/bin/virsh dumpxml {{ vm.name }}
+  register: dom_xml
+  with_items: "{{ vms }}"
+  loop_control:
+    loop_var: vm
+  when:
+    - vm.host == inventory_hostname
+    - vm.name in registered_vms.list_vms
+
+- set_fact:
+    "dom_dict_{{ item.vm.name }}": "{{ item.stdout | ansible.utils.from_xml }}"
+  with_items:
+    - "{{ dom_xml.results }}"
+  when:
+    - item.stdout is defined
+
+- name: Inventory existing VMs
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({item.vm.name: {'mac': vars['dom_dict_' + item.vm.name].domain.devices.interface.mac['@address']} | combine(item.vm) }) }}"
+  with_items:
+    - "{{ dom_xml.results }}"
+  when:
+    - item.stdout is defined
+
+- set_fact:
+    create_vms: "{{ create_vms + [item] }}"
+  with_items: "{{ vms }}"
+  when:
+    - item.host == inventory_hostname
+    - item.name not in registered_vms.list_vms
+    - item.state == "running"
+
+- name: Inventory VMs to create
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({item.name: {'mac': '52:54:00' | random_mac } | combine(item) }) }}"
+  with_items:
+    - "{{ create_vms }}"
+
+- add_host: hostname={{ item.key }}
+    ansible_host={{ item.value.hostname | default(item.key) }}.{{ domain }}
+    groups={{ (['vms'] + (item.value.inventory_groups | default([]))) | join(',') }}
+    mac={{ item.value.mac }}
+  with_dict:
+    - "{{ vm_inventory }}"
+
+- debug:
+    msg: "{{ groups }}"

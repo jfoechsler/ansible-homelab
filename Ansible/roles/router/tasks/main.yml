@@ -1,0 +1,56 @@
+---
+
+- include_tasks: firewall.yml
+
+- name: Install packages
+  dnf:
+    name: "
+      dnsmasq
+      "
+    state: present
+  register: dnsmasq_pkg
+
+- name: dnsmasq conf
+  template:
+    src: dnsmasq.conf.j2
+    dest: /etc/dnsmasq.conf
+  register: dnsmasq_conf
+
+- name: unit override directory
+  file:
+    path: /etc/systemd/system/dnsmasq.service.d
+    state: directory
+
+- name: unit override conf
+  template:
+    src: unit-override.conf.j2
+    dest: /etc/systemd/system/dnsmasq.service.d/unit-override.conf
+  register: unit_conf
+
+- name: hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+  register: hosts_conf
+
+- name: dnsmasq service state needed
+  set_fact:
+    dnsmasq_state_needed: restarted
+  when: dnsmasq_conf.changed
+      or hosts_conf.changed
+      or unit_conf.changed
+
+- name: dnsmasq service
+  systemd:
+    name: "dnsmasq"
+    state: "{{ dnsmasq_state_needed}}"
+    enabled: "yes"
+    daemon_reload: "yes"
+
+- name: dispatcher
+  template:
+    src: dnsmasq-dispatcher.sh.j2
+    dest: /etc/NetworkManager/dispatcher.d/dnsmasq-dispatcher.sh
+    owner: root
+    group: root
+    mode: "0700"

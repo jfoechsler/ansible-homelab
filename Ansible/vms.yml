@@ -1,0 +1,12 @@
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: vm-host
+        tasks_from: inventory
+
+- hosts: "{{ staging | default(false) | bool | ternary('staging', 'vms') }}"
+  become: True
+  roles:
+    - base
+    - vm
