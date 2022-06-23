@@ -11,7 +11,6 @@
   with_items: "{{ containers }}"
   when:
     - item.host == inventory_hostname
-    - item.state == "present"
 
 - name: Pull image
   containers.podman.podman_image:
@@ -21,6 +20,7 @@
   loop_control:
     loop_var: ctr
   register: image_state
+  when: ctr.value.state == "present"
 
 - name: Save container restart state
   set_fact:
@@ -75,10 +75,10 @@
     - item.value.state == "absent"
   notify: systemd reload
 
-- name: Render container templates
+- name: Render container dnsmasq configuration
   set_fact:
-    dnsmasq_conf: "{{ dnsmasq_conf + lookup('template', item.value.dnsmasq_conf + '.j2') }}"
-  with_dict: "{{ ctr_dict }}"
+    dnsmasq_conf: "{{ dnsmasq_conf + lookup('template', item.1 + '.j2') }}"
+  loop: "{{ ctr_dict | subelements('dnsmasq_templates', skip_missing=True) }}"
   when:
-    - item.value.state == "present"
-    - item.value.dnsmasq_conf is defined
+    - item.0.state == "present"
+    - item.0.dnsmasq_templates is defined

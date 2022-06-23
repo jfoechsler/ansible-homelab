@@ -10,15 +10,6 @@ VMs and containers can be defined without any Ansible config writing required, j
 # running, shutdown, destroyed
 
 vms:
-  - name: vm1
-    state: running
-    image: f36
-    host: myserver
-    disk: 50
-    network: host-bridge
-    delete_on_termination: false
-    serial: 1
-
   - name: staging1
     hostname: vm-staging1
     inventory_groups:
@@ -31,10 +22,19 @@ vms:
     delete_on_termination: true
     serial: 1
 
+  - name: vm1
+    state: running
+    image: f36
+    host: myserver
+    disk: 50
+    network: host-bridge
+    delete_on_termination: false
+    serial: 1
+
 # States:
 # present, absent
 containers:
-  - name: pihole
+  - name: pihole-staging
     host: staging1
     image: docker.io/pihole/pihole:2022.05
     ports:
