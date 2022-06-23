@@ -9,7 +9,7 @@ myserver inside_nic=br0 outside_nic=enp6s0 name=myserver ansible_host=<static IP
 [servers]
 myserver ansible_host=myserver.home.example.com data_dev=/dev/disk/by-id/xxxx data0_lv_size=45%VG
 
-[lan_hosts:children]
+[lan_hosts]
 
 [vm_hosts]
 myserver ansible_host=myserver.home.example.com

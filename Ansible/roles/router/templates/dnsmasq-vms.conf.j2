@@ -1,6 +1,5 @@
 # {{ ansible_managed }}
 
-{% for host in groups['vms'] %}
-{% set ip = loop.index + 150 %}
-dhcp-host={{ hostvars[host].mac }},{{ hostvars[host].ansible_host }},{{ prefix_24 }}.{{ ip }}
+{% for dhcp_host in leases.vms %}
+dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].ansible_host }},{{ prefix_24 }}.{{ dhcp_host.value }}
 {% endfor %}

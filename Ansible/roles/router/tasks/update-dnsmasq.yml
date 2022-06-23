@@ -1,15 +1,15 @@
 ---
 
+- include_tasks: get-leases.yml
+  vars:
+    group: vms
+    ip_start: "{{ vm_ip_start }}"
+    ip_end: "{{ vm_ip_end }}"
+
 - name: dnsmasq vms conf
   template:
     src: dnsmasq-vms.conf.j2
     dest: /etc/dnsmasq.d/vms.conf
-  notify: dnsmasq restart
-
-- name: add_hosts file
-  template:
-    src: add_hosts.j2
-    dest: /etc/dnsmasq.d/add_hosts
   notify: dnsmasq restart
 
 - name: dnsmasq container directives

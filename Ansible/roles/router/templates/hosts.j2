@@ -1,19 +1,6 @@
 # {{ ansible_managed }}
-# See /etc/dnsmasq.d/add_hosts for vm hosts
 
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
 {{ vars['ansible_' + inside_nic].ipv4.address }} {{ name }} {{ name }}.{{ domain }}
-
-{% for host in groups['lan_hosts'] %}
-{% set ip = loop.index + 4 %}
-{{ prefix_24 }}.{{ ip }} {{ hostvars[host].ansible_host }}
-{% endfor %}
-
-{% if wlan_nic is defined %}
-{% for host in groups['wlan_hosts'] %}
-{% set ip = loop.index + 4 %}
-{{ wlan_prefix_24 }}.{{ ip }} {{ host }} {{ host }}.{{ domain }}
-{% endfor %}
-{% endif %}

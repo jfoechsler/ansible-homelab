@@ -2,3 +2,6 @@
 
 - name: dnsmasq restart
   systemd: name=dnsmasq state=restarted
+
+- name: systemd resolved restart
+  systemd: name=systemd-resolved state=restarted

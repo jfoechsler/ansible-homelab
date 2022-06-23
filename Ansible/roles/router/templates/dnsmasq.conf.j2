@@ -17,20 +17,17 @@ bind-interfaces
 dhcp-name-match=set:wpad-ignore,wpad
 dhcp-ignore-names=tag:wpad-ignore
 
-addn-hosts=/etc/dnsmasq.d/add_hosts
 conf-dir=/etc/dnsmasq.d/,*.conf
 
 dhcp-range={{ prefix_24 }}.50,{{ prefix_24 }}.150,1h
-{% for host in groups['lan_hosts'] %}
-{% set ip = loop.index + 4 %}
-dhcp-host={{ hostvars[host].mac }},{{ hostvars[host].ansible_host }},{{ prefix_24 }}.{{ ip }}
+{% for dhcp_host in leases.lan_hosts %}
+dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ (dhcp_host.name | split(','))[0] }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
 {% endfor %}
 
 {% if wlan_nic is defined %}
 interface={{ wlan_nic }}
 dhcp-range={{ wlan_prefix_24 }}.50,{{ wlan_prefix_24 }}.150,1h
-{% for host in groups['wlan_hosts'] %}
-{% set ip = loop.index + 4 %}
-dhcp-host={{ hostvars[host].mac }},{{ host }},{{ wlan_prefix_24 }}.{{ ip }}
+{% for dhcp_host in leases.wlan_hosts %}
+dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ (dhcp_host.name | split(','))[0] }}.{{ domain }},{{ wlan_prefix_24 }}.{{ dhcp_host.value }}
 {% endfor %}
 {% endif %}

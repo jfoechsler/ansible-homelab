@@ -10,7 +10,20 @@
     state: present
   register: dnsmasq_pkg
 
-- name: dnsmasq conf
+- include_tasks: get-leases.yml
+  vars:
+    group: lan_hosts
+    ip_start: "{{ lan_ip_start }}"
+    ip_end: "{{ lan_ip_end }}"
+
+- include_tasks: get-leases.yml
+  vars:
+    group: wlan_hosts
+    ip_start: "{{ wlan_ip_start }}"
+    ip_end: "{{ wlan_ip_end }}"
+  when: wlan_nic is defined
+
+- name: dnsmasq main conf
   template:
     src: dnsmasq.conf.j2
     dest: /etc/dnsmasq.conf
@@ -54,3 +67,9 @@
     owner: root
     group: root
     mode: "0700"
+
+- name: systemd resolved config
+  template:
+    src: systemd-resolved.j2
+    dest: /etc/systemd/resolved.conf
+  notify: systemd resolved restart
