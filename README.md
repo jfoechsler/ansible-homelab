@@ -53,7 +53,10 @@ containers:
       TZ: 'Europe/Copenhagen'
       DNSMASQ_LISTENING: 'all'
       WEB_GID: '999'
-    #dnsmasq_conf: "dnsmasq-pihole"
+#    dnsmasq_templates:
+#      - "dnsmasq-pihole"
+    http_port_idx: 2
+    http_proxy: nginx-staging    
 
   - name: pihole
     host: vm1
@@ -74,7 +77,37 @@ containers:
       TZ: 'Europe/Copenhagen'
       DNSMASQ_LISTENING: 'all'
       WEB_GID: '999'
-    dnsmasq_conf: "dnsmasq-pihole"
+    dnsmasq_templates:
+      - "dnsmasq-pihole"
+    http_port_idx: 2
+    http_proxy: nginx
+
+  - name: nginx-staging
+    host: staging1
+    image: docker.io/library/nginx
+    ports:
+      - 80:80/tcp
+    volumes:
+      - path: /etc/nginx/conf.d/ansible.conf
+        type: template
+        name: nginx-containers
+    state: present
+    dnsmasq_templates:
+      - "dnsmasq-ingress"
+
+  - name: nginx
+    host: vm1
+    image: docker.io/library/nginx
+    ports:
+      - 80:80/tcp
+    volumes:
+      - path: /etc/nginx/conf.d/ansible.conf
+        type: template
+        name: nginx-containers
+    state: present
+    dnsmasq_templates:
+      - "dnsmasq-ingress"
+
 ```
 # Setup up from scratch
 
