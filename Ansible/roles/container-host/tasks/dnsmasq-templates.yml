@@ -1,0 +1,8 @@
+
+- name: Render container dnsmasq configuration
+  set_fact:
+    dnsmasq_conf: "{{ dnsmasq_conf + lookup('template', item.1 + '.j2') }}"
+  loop: "{{ ctr_dict | subelements('dnsmasq_templates', skip_missing=True) }}"
+  when:
+    - item.0.state == "present"
+    - item.0.dnsmasq_templates is defined

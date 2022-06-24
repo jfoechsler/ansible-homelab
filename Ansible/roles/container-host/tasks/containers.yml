@@ -1,0 +1,50 @@
+
+- name: Pull image
+  containers.podman.podman_image:
+    name: "{{ ctr.value.image }}"
+    force: yes
+  with_dict: "{{ ctr_dict }}"
+  loop_control:
+    loop_var: ctr
+  register: image_state
+  when: ctr.value.state == "present"
+
+- name: Save container restart state
+  set_fact:
+    service_start: "{{ service_start | combine({item.ctr.key: item.changed | ternary('restarted', 'started') }) }}"
+  with_items: "{{ image_state.results }}"
+
+- name: Container with systemd service
+  containers.podman.podman_container:
+    name: "{{ item.value.name }}"
+    image: "{{ item.value.image }}"
+    state: "{{ item.value.state }}"
+    recreate: no
+    ipc: shareable
+    ports: "{{ item.value.ports }}"
+    env: "{{ item.value.environment | default(defaults.env) }}"
+    volume: "{{ volumes_list[item.value.name] | default([]) }}"
+    generate_systemd:
+      new: no
+      path: /etc/systemd/system/
+      restart_policy: always
+      time: 120
+      names: true
+  with_dict: "{{ ctr_dict }}"
+  register: ctr_state
+
+- name: Service
+  systemd:
+    name: "container-{{ item.value.name }}"
+    state: "{{ (item.value.state == 'present') | ternary(service_start[item.value.name], 'stopped') }}"
+    enabled: "{{ (item.value.state == 'present') | ternary('yes', 'no') }}"
+    daemon_reload: "yes"
+  with_dict: "{{ ctr_dict }}"
+
+- file:
+    path: /etc/systemd/system/container-{{ item.value.name }}.service
+    state: absent
+  with_dict: "{{ ctr_dict }}"
+  when:
+    - item.value.state == "absent"
+  notify: systemd reload

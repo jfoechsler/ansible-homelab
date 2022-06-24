@@ -1,0 +1,13 @@
+
+- name: Generate volumes list
+  set_fact:
+    volumes_list: "{{ volumes_list | combine({item.0.name: volumes_list[item.0.name] | default([]) + [vmfs_path + '/' + item.1.name + ':' + item.1.path + ':z'] }) }}"
+  loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
+  when: item.1.type == "vmfs"
+
+- name: VMFS mount directories
+  file:
+    path: "{{ vmfs_path }}/{{ item.1.name }}"
+    state: directory
+  loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
+  when: item.1.type == "vmfs"
