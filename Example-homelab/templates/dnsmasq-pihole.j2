@@ -1,5 +1,3 @@
 
 no-resolv
 server={{ ansible_default_ipv4.address }}#{{ item.0.ports.0 | split(":") | first }}
-
-cname={{ item.0.name }}.{{ domain }},{{ ansible_host }}
