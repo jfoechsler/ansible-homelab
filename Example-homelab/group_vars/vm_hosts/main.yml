@@ -1,5 +1,5 @@
 # workaround for power button to shut down machine
 #chassis: vm
-
+sudo_admin: true
 vm_networks:
   - name: host-bridge

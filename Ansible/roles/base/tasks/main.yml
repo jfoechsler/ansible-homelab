@@ -25,3 +25,9 @@
 
 - debug:
     msg: "{{ ansible_devices }}"
+
+- name: sudo admin
+  template:
+    src: sudo_admin.j2
+    dest: /etc/sudoers.d/ansible_admin
+  when: sudo_admin
