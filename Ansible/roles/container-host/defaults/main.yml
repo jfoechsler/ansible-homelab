@@ -6,3 +6,4 @@ ctr_dict: {}
 service_start: {}
 volumes_list: {}
 containers_dir: "/var/local/ansible-containers"
+containers_restart: []

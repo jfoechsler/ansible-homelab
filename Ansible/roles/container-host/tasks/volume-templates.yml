@@ -9,9 +9,16 @@
     src: "{{item.1.name}}.j2"
     dest: "{{ containers_dir }}/volume-templates/{{item.1.name}}"
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
+  register: volume_templates
   when:
     - item.0.state == "present"
     - item.1.type == "template"
+
+- name: Save container restart
+  set_fact:
+    containers_restart: "{{ containers_restart + [item.item.0.name] }}"
+  with_items: "{{ volume_templates.results }}"
+  when: item.changed
 
 - name: Generate volumes list
   set_fact:

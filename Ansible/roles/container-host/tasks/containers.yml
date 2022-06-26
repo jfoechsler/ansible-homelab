@@ -9,10 +9,11 @@
   register: image_state
   when: ctr.value.state == "present"
 
-- name: Save container restart state
+- name: Save container restart
   set_fact:
-    service_start: "{{ service_start | combine({item.ctr.key: item.changed | ternary('restarted', 'started') }) }}"
+    containers_restart: "{{ containers_restart + [item.ctr.key] }}"
   with_items: "{{ image_state.results }}"
+  when: item.changed
 
 - name: Container with systemd service
   containers.podman.podman_container:
@@ -32,6 +33,17 @@
       names: true
   with_dict: "{{ ctr_dict }}"
   register: ctr_state
+
+- name: Dont restart changed container
+  set_fact:
+    containers_restart: "{{ containers_restart | unique | difference([item.container.Name]) }}"
+  with_items: "{{ ctr_state.results }}"
+  when: item.changed
+
+- name: Container service states
+  set_fact:
+    service_start: "{{ service_start | combine({item: (item in containers_restart) | ternary('restarted', 'started') }) }}"
+  with_items: "{{ ctr_dict.keys() }}"
 
 - name: Service
   systemd:
