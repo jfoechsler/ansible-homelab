@@ -31,3 +31,5 @@
     src: sudo_admin.j2
     dest: /etc/sudoers.d/ansible_admin
   when: sudo_admin
+
+- include_tasks: timedate.yml
