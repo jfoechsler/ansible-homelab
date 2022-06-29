@@ -119,3 +119,30 @@ containers:
     state: present
     dnsmasq_templates:
       - "dnsmasq-ingress"
+
+  - name: prometheus-staging
+    host: staging1
+    image: quay.io/prometheus/prometheus:v2.36.2
+    user: "999"
+    ports:
+      - 3190:9090/tcp
+    state: present
+    http_port_idx: 0
+    http_proxy: nginx-staging
+    volumes:
+      - path: /prometheus
+        type: vmfs
+        name: prometheus-data-staging
+      - path: /etc/prometheus/prometheus.yml
+        type: template
+        name: prometheus-server.yml
+
+  - name: node-exporter-staging
+    host: staging1
+    image: quay.io/prometheus/node-exporter:latest
+    state: present
+    mount:
+      - type=bind,src=/,dst=/host,ro=true,bind-propagation=rslave
+    command: "--path.rootfs=/host"
+    network: "host"
+    pid: "host"
