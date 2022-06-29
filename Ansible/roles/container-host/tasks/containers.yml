@@ -22,9 +22,14 @@
     state: "{{ item.value.state }}"
     recreate: no
     ipc: shareable
-    ports: "{{ item.value.ports }}"
+    ports: "{{ item.value.ports | default([]) }}"
     env: "{{ item.value.environment | default(defaults.env) }}"
-    volume: "{{ volumes_list[item.value.name] | default([]) }}"
+    volume: "{{ volumes_list[item.value.name] if volumes_list[item.value.name] is defined else omit }}"
+    mount: "{{ item.value.mount if item.value.mount is defined else omit }}"
+    command: "{{ item.value.command if item.value.command is defined else omit }}"
+    network: "{{ item.value.network | default('bridge') }}"
+    pid: "{{ item.value.pid | default('private') }}"
+    user: "{{ item.value.user if item.value.user is defined else omit }}"
     generate_systemd:
       new: no
       path: /etc/systemd/system/

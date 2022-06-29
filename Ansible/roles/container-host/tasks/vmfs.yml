@@ -8,6 +8,7 @@
 - name: VMFS mount directories
   file:
     path: "{{ vmfs_path }}/{{ item.1.name }}"
+    owner: "{{ item.0.user if item.0.user is defined else omit }}"
     state: directory
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
   when: item.1.type == "vmfs"
