@@ -5,5 +5,6 @@ dnsmasq_conf: ""
 ctr_dict: {}
 service_start: {}
 volumes_list: {}
+vmfs_path: /mnt/vmfs
 containers_dir: "/var/local/ansible-containers"
 containers_restart: []

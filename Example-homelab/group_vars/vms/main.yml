@@ -1,2 +1,105 @@
 ansible_user: fedora
-vmfs_path: /mnt/vmfs
+
+# States:
+# present, absent
+containers:
+  - name: pihole-staging
+    host: staging1
+    image: docker.io/pihole/pihole:2022.05
+    ports:
+      - 3053:53/tcp
+      - 3053:53/udp
+      - 3080:80/tcp
+    volumes:
+      - path: /etc/pihole
+        type: vmfs
+        name: pihole-etc-staging
+      - path: /etc/dnsmasq.d
+        type: vmfs
+        name: pihole-dnsmasq-staging
+    state: present
+    environment:
+      TZ: 'Europe/Copenhagen'
+      DNSMASQ_LISTENING: 'all'
+      WEB_GID: '999'
+    #    dnsmasq_templates:
+    #      - "dnsmasq-pihole"
+    http_port_idx: 2
+    http_proxy: nginx-staging
+
+  - name: pihole
+    host: vm1
+    image: docker.io/pihole/pihole:2022.05
+    ports:
+      - 3053:53/tcp
+      - 3053:53/udp
+      - 3080:80/tcp
+    volumes:
+      - path: /etc/pihole
+        type: vmfs
+        name: pihole-etc
+      - path: /etc/dnsmasq.d
+        type: vmfs
+        name: pihole-dnsmasq
+    state: present
+    environment:
+      TZ: 'Europe/Copenhagen'
+      DNSMASQ_LISTENING: 'all'
+      WEB_GID: '999'
+    dnsmasq_templates:
+      - "dnsmasq-pihole"
+    http_port_idx: 2
+    http_proxy: nginx
+
+  - name: nginx-staging
+    host: staging1
+    image: docker.io/library/nginx
+    ports:
+      - 80:80/tcp
+    volumes:
+      - path: /etc/nginx/conf.d/ansible.conf
+        type: template
+        name: nginx-containers
+    state: present
+    dnsmasq_templates:
+      - "dnsmasq-ingress"
+
+  - name: nginx
+    host: vm1
+    image: docker.io/library/nginx
+    ports:
+      - 80:80/tcp
+    volumes:
+      - path: /etc/nginx/conf.d/ansible.conf
+        type: template
+        name: nginx-containers
+    state: present
+    dnsmasq_templates:
+      - "dnsmasq-ingress"
+
+  - name: prometheus-staging
+    host: staging1
+    image: quay.io/prometheus/prometheus:v2.36.2
+    user: "999"
+    ports:
+      - 3190:9090/tcp
+    state: present
+    http_port_idx: 0
+    http_proxy: nginx-staging
+    volumes:
+      - path: /prometheus
+        type: vmfs
+        name: prometheus-data-staging
+      - path: /etc/prometheus/prometheus.yml
+        type: template
+        name: prometheus-server.yml
+
+  - name: node-exporter-staging
+    host: staging1
+    image: quay.io/prometheus/node-exporter:latest
+    state: present
+    mount:
+      - type=bind,src=/,dst=/host,ro=true,bind-propagation=rslave
+    command: "--path.rootfs=/host"
+    network: "host"
+    pid: "host"
