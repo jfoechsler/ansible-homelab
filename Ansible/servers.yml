@@ -5,3 +5,4 @@
     - lvm
     - fileserver
     - libvirtd
+    - syncthing
