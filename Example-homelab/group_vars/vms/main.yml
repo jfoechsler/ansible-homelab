@@ -5,7 +5,7 @@ ansible_user: fedora
 containers:
   - name: pihole-staging
     host: staging1
-    image: docker.io/pihole/pihole:2022.07.1
+    image: docker.io/pihole/pihole:2022.09.2
     ports:
       - 3053:53/tcp
       - 3053:53/udp
@@ -29,7 +29,7 @@ containers:
 
   - name: pihole
     host: vm1
-    image: docker.io/pihole/pihole:2022.07.1
+    image: docker.io/pihole/pihole:2022.09.2
     ports:
       - 3053:53/tcp
       - 3053:53/udp
