@@ -5,7 +5,7 @@
         name: vm-host
         tasks_from: inventory
 
-- hosts: "{{ staging | default(false) | bool | ternary('staging', 'vms') }}"
+- hosts: "{{ staging | default(false) | bool | ternary('staging_vms', 'vms') }}"
   become: True
   roles:
     - base

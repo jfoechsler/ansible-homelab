@@ -20,5 +20,7 @@ vms
 [staging_vms]
 [staging_container_hosts:children]
 staging_vms
+
+# Group membership for enabling test updates
 [staging:children]
 staging_vms
