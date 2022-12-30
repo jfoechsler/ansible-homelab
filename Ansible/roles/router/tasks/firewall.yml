@@ -44,4 +44,4 @@
     immediate: true
   with_nested:
     - ['internal', 'wlan']
-    - ['dns', 'dhcp', 'samba', 'vnc-server']
+    - "{{ router_internal_services_firewall }}"
