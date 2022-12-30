@@ -5,8 +5,7 @@
     name: "
       samba,
       python3-libselinux,
-      python3-libsemanage,
-      syncthing
+      python3-libsemanage
       "
     state: present
 
@@ -43,25 +42,27 @@
     state: "started"
     enabled: "yes"
 
-- name: data0 share
+- name: data0 shares
   when:
     - data_dev is defined
     - data0_lv_size is defined
   file:
-    path: "{{ data0_path }}/share"
+    path: "{{ data0_path }}/{{ item }}"
     state: directory
     owner: "{{ owner }}"
     group: "{{ owner }}"
-  register: data0_share
+  register: data0_shares
+  with_items: ['share', 'home']
 
 - name: Allow samba access to share
   sefcontext:
-    target: '{{ data0_path }}/share(/.*)?'
+    target: '{{ data0_path }}/{{ item.item }}(/.*)?'
     setype: samba_share_t
     state: present
-  register: filecontext
-  when: data0_share.skipped is false
+  with_items: "{{ data0_shares.results }}"
+  when: item.changed
 
 - name: Run restore context if needed
-  shell: restorecon -R -v {{ data0_path }}/share
-  when: filecontext.changed
+  shell: restorecon -R -v {{ data0_path }}/{{ item.item }}
+  with_items: "{{ data0_shares.results }}"
+  when: item.changed
