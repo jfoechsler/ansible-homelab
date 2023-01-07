@@ -1,5 +1,4 @@
 - hosts: routers
   become: True
   roles:
-    - base
     - router

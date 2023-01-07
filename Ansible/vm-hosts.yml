@@ -1,3 +1,4 @@
+# Fetch VM inventory and VMs to be created.
 - hosts: vm_hosts
   become: True
   tasks:
@@ -5,6 +6,7 @@
         name: vm-host
         tasks_from: inventory
 
+# Update Dnsmasq from inventory
 - hosts: routers
   become: True
   tasks:
@@ -12,6 +14,7 @@
         name: router
         tasks_from: update-dnsmasq
 
+# Perform VM setup
 - hosts: vm_hosts
   become: True
   roles:

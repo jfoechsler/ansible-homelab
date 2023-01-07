@@ -1,25 +1,33 @@
 [homelab:children]
-vm_hosts
 servers
 vms
 
 [routers]
 myserver inside_nic=br0 outside_nic=enp6s0 name=myserver ansible_host=<static IP>
 
+# Physical servers
 [servers]
-myserver ansible_host=myserver.home.example.com data_dev=/dev/disk/by-id/xxxx data0_lv_size=45%VG
+myserver ansible_host=<static IP> data_dev=/dev/disk/by-id/xxxx data0_lv_size=45%VG
 
+# DHCP clients DNS and IP reservation
 [lan_hosts]
+hephaestus mac='3c:7c:3f:2e:80:fc'
 
+# Host from servers group with router role
+[routers]
+myserver inside_nic=br0 outside_nic=enp6s0 ansible_host=<static IP>
+
+# Host from servers group with fileserver role
+[fileservers]
+myserver
+
+# Host from servers group with vm-host role
 [vm_hosts]
-myserver ansible_host=myserver.home.example.com
+myserver
 
-[vms]
-[container_hosts:children]
-vms
+# Runtime groups used by vm-inventory
 [staging_vms]
-[staging_container_hosts:children]
-staging_vms
+[vms]
 
 # Group membership for enabling test updates
 [staging:children]

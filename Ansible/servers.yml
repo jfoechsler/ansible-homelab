@@ -3,6 +3,5 @@
   roles:
     - base
     - lvm
-    - fileserver
     - libvirtd
     - syncthing
