@@ -1,4 +1,4 @@
-
+# dnsmasq configuration with cnames for containers using {{ ansible_host }} as nginx proxy
 {% for ctr in containers %}
 {% if ctr.http_port_idx is defined %}
 {% if ctr.http_proxy == item.0.name %}

@@ -14,6 +14,11 @@ interface={{ inside_nic }}
 except-interface=lo
 bind-interfaces
 
+no-resolv
+{% for server in dns_public %}
+server={{ server }}
+{% endfor %}
+
 dhcp-name-match=set:wpad-ignore,wpad
 dhcp-ignore-names=tag:wpad-ignore
 

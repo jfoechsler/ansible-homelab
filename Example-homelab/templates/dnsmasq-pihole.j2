@@ -1,3 +1,2 @@
-
-no-resolv
-server={{ ansible_default_ipv4.address }}#{{ item.0.ports.0 | split(":") | first }}
+# dnsmasq configuration for using pihole by dhcp clients
+dhcp-option=option:dns-server,{{ ansible_default_ipv4.address }},0.0.0.0

@@ -3,6 +3,18 @@ Manage your home Fedora server using DNSmasq, KVM VMs, LVM, podman containers, V
 
 If you would like to manage your local network and services in Git all without any prerequisite services, private cloud, docker-engine/swarm or other container orchestration.
 
+# Network setup
+## Dnsmasq Server
+Server host with router role is Dnsmasq DNS and DHCP server for local network.
+
+Local resolution override on server is added using our Dnsmasq instance.
+
+Dnsmasq uses public DNS servers from list variable `dns_public` for resolution instead of default auto-detection which would
+cause unnecessary extra steps to get public DNS via local `systemd-resolved`.
+
+Dnsmasq drop-in configuration can be added by `containers` items using `dnsmasq_templates` item to render jinja2 templated
+configuration. Example below shows usage with pi-hole.
+
 # VM and container definitions
 VMs and containers can be defined without any Ansible config writing required, just using lists defined in yaml:
 ```
