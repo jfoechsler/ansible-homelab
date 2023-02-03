@@ -1,13 +1,17 @@
 
-- name: volume templates directory
+- name: volume templates directories
   file:
-    path: "{{ containers_dir }}/volume-templates"
+    path: "{{ containers_dir }}/volume-templates/{{item.0.name}}"
     state: directory
+  loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
+  when:
+    - item.0.state == "present"
+    - item.1.type == "template"
 
 - name: Render container volume templates
   template:
     src: "{{item.1.name}}.j2"
-    dest: "{{ containers_dir }}/volume-templates/{{item.1.name}}"
+    dest: "{{ containers_dir }}/volume-templates/{{item.0.name}}/{{item.1.name}}"
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
   register: volume_templates
   when:
@@ -22,7 +26,7 @@
 
 - name: Generate volumes list
   set_fact:
-    volumes_list: "{{ volumes_list | combine({item.0.name: volumes_list[item.0.name] | default([]) + [containers_dir + '/volume-templates/' + item.1.name + ':' + item.1.path + ':z'] }) }}"
+    volumes_list: "{{ volumes_list | combine({item.0.name: volumes_list[item.0.name] | default([]) + [containers_dir + '/volume-templates/' + item.0.name + '/' + item.1.name + ':' + item.1.path + ':z'] }) }}"
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
   when:
     - item.0.state == "present"
