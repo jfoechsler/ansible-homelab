@@ -1,0 +1,5 @@
+- name: syncthing service
+  systemd:
+    name: "syncthing@{{ owner }}"
+    state: "stopped"
+    enabled: "yes"
