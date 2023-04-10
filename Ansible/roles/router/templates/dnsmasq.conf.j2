@@ -4,7 +4,6 @@ port=53
 
 domain-needed
 bogus-priv
-filterwin2k
 domain={{ domain }}
 local=/{{ domain }}/
 user=dnsmasq
@@ -15,24 +14,8 @@ except-interface=lo
 bind-interfaces
 
 no-resolv
-{% for server in dns_public %}
+{% for server in router_features_merged.dns.public %}
 server={{ server }}
 {% endfor %}
 
-dhcp-name-match=set:wpad-ignore,wpad
-dhcp-ignore-names=tag:wpad-ignore
-
 conf-dir=/etc/dnsmasq.d/,*.conf
-
-dhcp-range={{ prefix_24 }}.50,{{ prefix_24 }}.150,1h
-{% for dhcp_host in leases.lan_hosts %}
-dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ (dhcp_host.name | split(','))[0] }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
-{% endfor %}
-
-{% if wlan_nic is defined %}
-interface={{ wlan_nic }}
-dhcp-range={{ wlan_prefix_24 }}.50,{{ wlan_prefix_24 }}.150,1h
-{% for dhcp_host in leases.wlan_hosts %}
-dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ (dhcp_host.name | split(','))[0] }}.{{ domain }},{{ wlan_prefix_24 }}.{{ dhcp_host.value }}
-{% endfor %}
-{% endif %}

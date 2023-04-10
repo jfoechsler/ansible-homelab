@@ -1,3 +1,17 @@
+default_features:
+  dhcpd:
+    enabled: true
+  dns:
+    enabled: true
+    public:
+      - '1.1.1.1'
+      - '8.8.8.8'
+  internal_services_firewall:
+    - 'dns'
+    - 'dhcp'
+    - 'samba'
+    - 'vnc-server'
+    - 'syncthing'
 lease_dir: "/var/local/ansible-dnsmasq"
 dnsmasq_state_needed: started
 leases: {}

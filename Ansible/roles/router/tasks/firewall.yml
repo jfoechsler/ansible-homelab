@@ -13,6 +13,7 @@
     state: enabled
     permanent: true
     immediate: true
+  when: outside_nic is defined
 
 - name: Remove services in firewall external
   firewalld:
@@ -23,6 +24,7 @@
     immediate: true
   loop:
     - ssh
+  when: outside_nic is defined
 
 - name: Create wlan zone
   firewalld:
@@ -30,6 +32,7 @@
     state: present
     permanent: true
   register: wlan_zone
+  when: wlan_nic is defined
 
 - name: Reload firewall to enable wlan zone
   command: firewall-cmd --reload
@@ -44,4 +47,4 @@
     immediate: true
   with_nested:
     - ['internal', 'wlan']
-    - "{{ router_internal_services_firewall }}"
+    - "{{ router_features_merged.internal_services_firewall }}"

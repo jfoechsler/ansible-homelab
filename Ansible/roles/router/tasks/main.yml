@@ -1,4 +1,5 @@
 ---
+- include_vars: main.yml
 
 - include_tasks: firewall.yml
 
@@ -15,19 +16,36 @@
     group: lan_hosts
     ip_start: "{{ lan_ip_start }}"
     ip_end: "{{ lan_ip_end }}"
+  when: router_features_merged.dhcpd.enabled
 
 - include_tasks: get-leases.yml
   vars:
     group: wlan_hosts
     ip_start: "{{ wlan_ip_start }}"
     ip_end: "{{ wlan_ip_end }}"
-  when: wlan_nic is defined
+  when:
+    - wlan_nic is defined
+    - router_features_merged.dhcpd.enabled
 
 - name: dnsmasq main conf
   template:
     src: dnsmasq.conf.j2
     dest: /etc/dnsmasq.conf
   register: dnsmasq_conf
+
+- name: dnsmasq dhcpd conf
+  template:
+    src: dnsmasq.dhcpd.conf.j2
+    dest: /etc/dnsmasq.d/dhcpd.conf
+  register: dnsmasq_dhcpd_conf
+  when: router_features_merged.dhcpd.enabled
+
+- name: dnsmasq dhcpd disabled conf
+  template:
+    src: dnsmasq.dhcpd-disabled.conf.j2
+    dest: /etc/dnsmasq.d/dhcpd.conf
+  register: dnsmasq_dhcpd_conf
+  when: not router_features_merged.dhcpd.enabled
 
 - name: unit override directory
   file:
@@ -50,6 +68,7 @@
   set_fact:
     dnsmasq_state_needed: restarted
   when: dnsmasq_conf.changed
+      or dnsmasq_dhcpd_conf.changed
       or hosts_conf.changed
       or unit_conf.changed
 
