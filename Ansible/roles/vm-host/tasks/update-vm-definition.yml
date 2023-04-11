@@ -1,34 +1,34 @@
 - name: Save XML definition
   template:
     src: "vm-template.xml.j2"
-    dest: "{{ data0_path }}/vmhost/{{ item.name }}/dom.xml"
+    dest: "{{ vm_data_path }}/vmhost/{{ vm.name }}/dom.xml"
   register: saved_xml
 
 # if xml changed destroy undefine, define. Unless creating new VM
 - name: Destroy VM for update
   virt:
-    name: "{{ item.name }}"
+    name: "{{ vm.name }}"
     state: "shutdown"
   when:
     - saved_xml.changed
-    - item.name in registered_vms.list_vms
+    - vm.name in registered_vms.list_vms
 
 # undefine vm
 - name: Undefine VM for update
   virt:
     command: undefine
-    name: "{{ item.name }}"
+    name: "{{ vm.name }}"
   register: updated_undefined
   when:
     - saved_xml.changed
-    - item.name in registered_vms.list_vms
+    - vm.name in registered_vms.list_vms
 
 - name: List VMs until VM removed
   virt:
     command: list_vms
   register: updated_vm_list
   when: updated_undefined.undefine is defined
-  until: item.name not in updated_vm_list.list_vms
+  until: vm.name not in updated_vm_list.list_vms
   retries: 15
   delay: 1
 
@@ -38,11 +38,11 @@
     xml: "{{ lookup('template', 'vm-template.xml.j2') }}"
   when:
     - saved_xml.changed
-      or item.name in create_vms | map(attribute='name')
+      or vm.name in create_vms | map(attribute='name')
 
 - name: Register updated or created VM
   set_fact:
-    updated_vms: "{{ updated_vms + [item] }}"
+    updated_vms: "{{ updated_vms + [vm] }}"
   when:
     - saved_xml.changed
-      or item.name in create_vms | map(attribute='name')
+      or vm.name in create_vms | map(attribute='name')

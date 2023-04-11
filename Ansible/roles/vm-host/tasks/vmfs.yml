@@ -1,5 +1,5 @@
 - file:
-    path: "{{ data0_path }}/vmfs"
+    path: "{{ vm_data_path }}/vmfs"
     state: directory
 
 - include_tasks: get-vmfs.yml
@@ -11,10 +11,10 @@
 - name: Generate VMFS XML definition
   template:
     src: "virtiofs.xml.j2"
-    dest: "{{ data0_path }}/vmhost/vmfs.xml"
+    dest: "{{ vm_data_path }}/vmhost/vmfs.xml"
 
 - set_fact:
-    vmfs_desired: "{{ vmfs_desired + [{'vm': vm.value.name, 'source': data0_path + '/vmfs', 'target': 'vmfs' }] }}"
+    vmfs_desired: "{{ vmfs_desired + [{'vm': vm.value.name, 'source': vm_data_path + '/vmfs', 'target': 'vmfs' }] }}"
   with_dict:
     - "{{ vm_inventory }}"
   loop_control:
@@ -25,5 +25,7 @@
 
 - debug:
     msg: "{{vmfs_current}}"
-- command: /usr/bin/virsh attach-device --persistent {{ item.vm }} {{ data0_path }}/vmhost/vmfs.xml
+
+- name: Attach vmfs
+  command: /usr/bin/virsh attach-device --persistent {{ item.vm }} {{ vm_data_path }}/vmhost/vmfs.xml
   with_items: "{{ vmfs_desired|difference(vmfs_current) }}"

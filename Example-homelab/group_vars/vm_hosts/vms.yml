@@ -1,5 +1,6 @@
 vm_image:
   f36: Fedora-Cloud-Base-36-1.5.x86_64.raw.xz
+  f37: Fedora-Cloud-Base-37-1.7.x86_64.raw.xz
 
 #vm_data:
 #  data1:
@@ -30,7 +31,7 @@ vms:
     inventory_groups:
       - container_hosts
     state: running
-    image: f36
+    image: f37
     host: myserver
     disk: 50
     network: host-bridge

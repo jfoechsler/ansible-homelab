@@ -1,5 +1,7 @@
 vms: []
 vm_data: {}
+vm_data_path: "{{ data0_path }}"
+vm_volume_group: "{{ data_vg }}"
 create_vms: []
 updated_vms: []
 vmfs_current: []

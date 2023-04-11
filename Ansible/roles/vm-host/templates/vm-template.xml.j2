@@ -1,5 +1,5 @@
 <domain type="kvm">
-  <name>{{ item.name }}</name>
+  <name>{{ vm.name }}</name>
   <memory unit="KiB">4194304</memory>
   <vcpu placement="static">2</vcpu>
   <os>
@@ -32,18 +32,18 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="block" device="disk">
       <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
-      <source dev="/dev/{{ data_vg }}/vm-{{ item.name }}"/>
+      <source dev="/dev/{{ vm_volume_group }}/vm-{{ vm.name }}"/>
       <target dev="vda" bus="virtio"/>
       <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </disk>
     <disk type="file" device="cdrom">
-      <source file="/var/lib/libvirt/images/{{ item.name }}_cloud-init.iso"/>
+      <source file="/var/lib/libvirt/images/{{ vm.name }}_cloud-init.iso"/>
       <target dev="sda" bus="sata"/>
       <readonly/>
     </disk>
     <interface type="network">
-      <mac address="{{ vm_inventory[item.name]['mac'] }}"/>
-      <source network="{{ item.network }}"/>
+      <mac address="{{ vm_inventory[vm.name]['mac'] }}"/>
+      <source network="{{ vm.network }}"/>
       <model type="virtio"/>
     </interface>
     <controller type='usb' index='0' model='qemu-xhci'>
@@ -83,6 +83,18 @@
       <target chassis='6' port='0xd'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x5'/>
     </controller>
+    <input type="mouse" bus="ps2"/>
+    <input type="keyboard" bus="ps2"/>
+    <graphics type="spice" autoport="yes">
+      <listen type="address"/>
+      <image compression="off"/>
+      <gl enable="no"/>
+    </graphics>
+    <audio id="1" type="none"/>
+    <video>
+      <model type="cirrus" vram="16384" heads="1" primary="yes"/>
+      <address type="pci" domain="0x0000" bus="0x09" slot="0x01" function="0x0"/>
+    </video>
   </devices>
 </domain>
-<!-- serial: {{ item.serial|default("1") }} -->
+<!-- serial: {{ vm.serial|default("1") }} -->
