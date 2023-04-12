@@ -14,5 +14,6 @@
 
 - include_tasks: vmfs.yml
 - include_tasks: volume-templates.yml
+- include_tasks: ports.yml
 - include_tasks: containers.yml
 - include_tasks: dnsmasq-templates.yml
