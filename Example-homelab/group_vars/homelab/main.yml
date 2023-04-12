@@ -6,12 +6,3 @@ domain: "home.example.com"
 owner: "myuser"
 data_vg: data_vg
 data0_path: /mnt/data0
-router_internal_services_firewall:
- - 'dns'
- - 'dhcp'
- - 'samba'
- - 'vnc-server'
- - 'syncthing'
-dns_public:
- - '1.1.1.1'
- - '8.8.8.8'
