@@ -18,4 +18,9 @@ no-resolv
 server={{ server }}
 {% endfor %}
 
+{% if router_features_merged.dhcpd.router is defined %}
+dhcp-option=option:router,{{ router_features_merged.dhcpd.router }}
+{% endif %}
+
+
 conf-dir=/etc/dnsmasq.d/,*.conf
