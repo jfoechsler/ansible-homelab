@@ -26,7 +26,7 @@ containers:
 
   - name: pihole
     host: vm1
-    image: docker.io/pihole/pihole:2022.12
+    image: docker.io/pihole/pihole:2023.03.1
     ports:
       - 53:53/tcp
       - 53:53/udp
@@ -41,11 +41,13 @@ containers:
     state: present
     environment:
       TZ: 'Europe/Copenhagen'
-      DNSMASQ_LISTENING: 'all'
+      DNSMASQ_LISTENING: 'local'
       WEB_GID: '999'
-      PIHOLE_DNS_: "192.168.2.2"
-    dnsmasq_templates:
-      - "dnsmasq-pihole"
+      PIHOLE_DNS_: "192.168.0.5"
+      VIRTUAL_HOST: "pihole.{{ domain }}"
+# Main dnsmasq dhcpd disabled in favor of ISP GW custom DNS server config
+#    dnsmasq_templates:
+#      - "dnsmasq-pihole"
     http_port_idx: 2
     http_proxy: nginx
 
