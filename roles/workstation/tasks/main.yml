@@ -1,0 +1,23 @@
+- name: RPMfusion
+  dnf:
+    name: https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm
+    state: present
+
+- name: Install packages
+  dnf:
+    name: "
+      gnome-tweak-tool,
+      vim,
+      gnome-shell-extension-dash-to-dock,
+      cascadia-code-fonts,
+      podman-docker,
+      mariadb,
+      thunderbird,
+      virt-manager,
+      libvirt-client,
+      virt-install,
+      webp-pixbuf-loader,
+      @multimedia,
+      @workstation-product-environment
+      "
+    state: latest
