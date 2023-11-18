@@ -2,6 +2,7 @@ vms: []
 vm_data: {}
 vm_data_path: "{{ data0_path }}"
 vm_volume_group: "{{ data_vg }}"
+vm_images: "{{ data0_path }}/share/Linux-images"
 create_vms: []
 updated_vms: []
 vmfs_current: []
