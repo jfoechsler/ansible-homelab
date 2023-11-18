@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+# Requires=sys-subsystem-net-devices - doesn't seem to work, so adding network-online.target
+After=network-online.target
+Wants=network-online.target
+Requires=sys-subsystem-net-devices-{{ inside_nic }}.device
+BindsTo=sys-subsystem-net-devices-{{ inside_nic }}.device
+{% if wlan_nic is defined %}
+Requires=sys-subsystem-net-devices-{{ wlan_nic }}.device
+BindsTo=sys-subsystem-net-devices-{{ wlan_nic }}.device
+{% endif %}

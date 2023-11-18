@@ -1,0 +1,6 @@
+router_features_merged: |
+  {%- if router_features is defined and router_features is iterable -%}
+  {{ default_features | combine (router_features, recursive=True) }}
+  {%- else -%}
+  {{ default_features }}
+  {%- endif -%}
