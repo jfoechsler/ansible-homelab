@@ -18,6 +18,7 @@
       virt-install,
       webp-pixbuf-loader,
       @multimedia,
-      @workstation-product-environment
+      @workstation-product-environment,
+      podman
       "
     state: latest
