@@ -13,7 +13,7 @@
     - vm.name in registered_vms.list_vms
 
 - set_fact:
-    "dom_dict_{{ item.vm.name }}": "{{ item.stdout | ansible.utils.from_xml }}"
+    "dom_dict_{{ item.vm.name |replace('-', '_')  }}": "{{ item.stdout | ansible.utils.from_xml }}"
   with_items:
     - "{{ dom_xml.results }}"
   when:
@@ -21,7 +21,7 @@
 
 - name: Inventory existing VMs
   set_fact:
-    vm_inventory: "{{ vm_inventory | combine({item.vm.name: {'mac': vars['dom_dict_' + item.vm.name].domain.devices.interface.mac['@address']} | combine(item.vm) }) }}"
+    vm_inventory: "{{ vm_inventory | combine({item.vm.name: {'mac': vars['dom_dict_' + (item.vm.name | replace('-', '_'))].domain.devices.interface.mac['@address']} | combine(item.vm) }) }}"
   with_items:
     - "{{ dom_xml.results }}"
   when:

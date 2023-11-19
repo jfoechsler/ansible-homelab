@@ -70,7 +70,7 @@
     - "{{ updated_vms }}"
 
 - set_fact:
-    "dom_dict_{{ item.item.name }}": "{{ item.stdout | ansible.utils.from_xml }}"
+    "dom_dict_{{ item.item.name | replace('-', '_') }}": "{{ item.stdout | ansible.utils.from_xml }}"
   with_items:
     - "{{ dom_xml.results }}"
 
