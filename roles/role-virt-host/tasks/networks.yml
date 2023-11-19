@@ -4,27 +4,23 @@
     command: list_nets
   register: list_nets
 
-- set_fact:
-    create_networks: "{{ create_networks + [item] }}"
-  with_items: "{{ vm_networks }}"
-  when:
-    - item.name not in list_nets
-
 - name: Define bridge network
   virt_net:
     command: define
     name: "{{ item.name }}"
-    xml: "{{ lookup('template', 'network-template.xml.j2') }}"
-  with_items: "{{ create_networks }}"
+    xml: "{{ lookup('template', 'network-bridge.xml.j2') }}"
+  with_items: "{{ vm_network_bridge_name }}"
+  when:
+    - vm_network_bridge_name is defined
+    - network_bridge_name is defined
+    - vm_network_bridge_name not in list_nets
 
-- name: Ensure that a given network will be started at boot
+- name: Ensure that bridge network will be started at boot
   virt_net:
     autostart: yes
-    name: "{{ item.name }}"
-  with_items: "{{ vm_networks }}"
+    name: "{{ vm_network_bridge_name }}"
 
 - name: Ensure that a given network is active
   virt_net:
     state: active
-    name: "{{ item.name }}"
-  with_items: "{{ vm_networks }}"
+    name: "{{ vm_network_bridge_name }}"
