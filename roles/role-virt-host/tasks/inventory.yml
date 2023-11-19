@@ -41,12 +41,15 @@
   with_items:
     - "{{ create_vms }}"
 
-- add_host: hostname={{ item.key }}
-    ansible_host={{ item.value.hostname | default(item.key) }}.{{ domain }}
-    groups={{ (['vms'] + (item.value.inventory_groups | default([]))) | join(',') }}
-    mac={{ item.value.mac }}
+- add_host: hostname={{ vm.key }}
+    ansible_host={{ vm.value.hostname | default(vm.key) }}.{{ domain }}
+    groups={{ (['vms'] + (vm.value.inventory_groups | default([]))) | join(',') }}
+    mac={{ vm.value.mac }}
   with_dict:
     - "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
+  when: vm.value.state == "running"
 
 - debug:
     msg: "{{ groups }}"
