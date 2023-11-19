@@ -19,6 +19,7 @@
     - "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
+  when: vm.value.state == "running"
 
 - debug:
     msg: "{{vmfs_desired}}"
