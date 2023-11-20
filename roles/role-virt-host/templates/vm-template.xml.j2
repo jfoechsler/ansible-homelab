@@ -95,6 +95,13 @@
       <model type="cirrus" vram="16384" heads="1" primary="yes"/>
       <address type="pci" domain="0x0000" bus="0x09" slot="0x01" function="0x0"/>
     </video>
+{% if vm.pci_host_device is defined %}
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <{{ vm.pci_host_device }}/>
+      </source>
+    </hostdev>
+{% endif %}
   </devices>
 </domain>
 <!-- serial: {{ vm.serial|default("1") }} -->
