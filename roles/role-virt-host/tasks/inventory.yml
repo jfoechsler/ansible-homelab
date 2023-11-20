@@ -32,6 +32,7 @@
   register: vm_admin_network_status_json
   when: vm_admin_network_device is defined
 
+# Get IPs from admin NAT interface
 - include_tasks: get-admin-ips.yml
   with_items: "{{ dom_xml.results }}"
   when:
@@ -52,11 +53,23 @@
   with_items:
     - "{{ create_vms }}"
 
+- name: Inventory VMs with elastic IP for DHCP reservation
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({vm.key: {'eip': vm.value.eip } | combine(vm_inventory[vm.key]) }) }}"
+  with_dict:
+    - "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
+  when:
+    - vm.value.state == "running"
+    - vm.value.eip is defined
+
 - add_host: hostname={{ vm.key }}
     ansible_host={{ vm.value.address | default('vm-' + vm.key + '.' + domain) }}
     groups={{ (['vms'] + (vm.value.inventory_groups | default([]))) | join(',') }}
     mac={{ vm.value.mac }}
     local_ssh_access={{ vm.value.local_ssh_access | default(false) }}
+    eip={{ vm.value.eip | default() }}
   with_dict:
     - "{{ vm_inventory }}"
   loop_control:

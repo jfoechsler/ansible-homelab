@@ -19,10 +19,17 @@
 - set_fact:
     dhcp_hosts: []
 
+- name: List with map of 'host,mac' names and the lease eIP value
+  set_fact:
+    group_leases: "{{ group_leases + [{'name': item + ',' + hostvars[item].mac, 'value': hostvars[item].eip }] }}"
+  loop: "{{ groups[group] }}"
+  when: hostvars[item].eip != ''
+
 - name: List with map of 'host,mac' names and the lease IP value
   set_fact:
     group_leases: "{{ group_leases + [{'name': item.item.path | basename(), 'value': item.content | b64decode }] }}"
   loop: "{{ lease_slurps.results  }}"
+  when: item.item.path | basename() not in (group_leases | map(attribute='name'))
 
 - set_fact:
     dhcp_pool: "{{ query('sequence', dhcp_range) }}"
@@ -42,7 +49,7 @@
     - groups[group] is defined
     - hostvars[item].local_ssh_access | default(false) | bool is false
 
-- name: Add leases from free pool for hosts not already in leases directory
+- name: Add leases from free pool for hosts not already in leases
   set_fact:
     group_leases: "{{ group_leases + [{'name': item, 'value': dhcp_pool_free[idx] }] }}"
   loop: "{{ dhcp_hosts | difference(group_leases | map(attribute='name')) }}"
