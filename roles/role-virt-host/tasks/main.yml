@@ -22,3 +22,4 @@
 - include_tasks: vms.yml
 - include_tasks: vm-data.yml
 - include_tasks: vmfs.yml
+- include_tasks: inventory.yml

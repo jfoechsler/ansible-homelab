@@ -38,7 +38,9 @@
   set_fact:
     dhcp_hosts: "{{ dhcp_hosts + [item + ',' + hostvars[item].mac] }}"
   loop: "{{ groups[group] }}"
-  when: groups[group] is defined
+  when:
+    - groups[group] is defined
+    - hostvars[item].local_ssh_access | default(false) | bool is false
 
 - name: Add leases from free pool for hosts not already in leases directory
   set_fact:

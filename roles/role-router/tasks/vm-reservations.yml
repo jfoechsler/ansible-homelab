@@ -11,4 +11,3 @@
     src: dnsmasq-vms.conf.j2
     dest: /etc/dnsmasq.d/vms.conf
   notify: dnsmasq restart
-

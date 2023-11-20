@@ -7,9 +7,8 @@
 - name: Define bridge network
   virt_net:
     command: define
-    name: "{{ item.name }}"
+    name: "{{ vm_network_bridge_name }}"
     xml: "{{ lookup('template', 'network-bridge.xml.j2') }}"
-  with_items: "{{ vm_network_bridge_name }}"
   when:
     - vm_network_bridge_name is defined
     - network_bridge_name is defined

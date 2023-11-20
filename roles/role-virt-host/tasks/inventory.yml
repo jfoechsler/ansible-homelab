@@ -19,13 +19,24 @@
   when:
     - item.stdout is defined
 
-- name: Inventory existing VMs
+- name: Inventory existing VMs with MAC address for DHCP reservation
   set_fact:
     vm_inventory: "{{ vm_inventory | combine({item.vm.name: {'mac': vars['dom_dict_' + (item.vm.name | replace('-', '_'))].domain.devices.interface.mac['@address']} | combine(item.vm) }) }}"
   with_items:
     - "{{ dom_xml.results }}"
   when:
     - item.stdout is defined
+
+- slurp:
+    src: "/var/lib/libvirt/dnsmasq/{{ vm_admin_network_device }}.status"
+  register: vm_admin_network_status_json
+  when: vm_admin_network_device is defined
+
+- include_tasks: get-admin-ips.yml
+  with_items: "{{ dom_xml.results }}"
+  when:
+    - item.vm.local_ssh_access | default(false) | bool
+    - vm_admin_network_status_json.content is defined
 
 - set_fact:
     create_vms: "{{ create_vms + [item] }}"
@@ -35,16 +46,17 @@
     - item.name not in registered_vms.list_vms
     - item.state == "running"
 
-- name: Inventory VMs to create
+- name: Inventory VMs to create with new MAC address for DHCP reservation
   set_fact:
     vm_inventory: "{{ vm_inventory | combine({item.name: {'mac': '52:54:00' | random_mac } | combine(item) }) }}"
   with_items:
     - "{{ create_vms }}"
 
 - add_host: hostname={{ vm.key }}
-    ansible_host={{ vm.value.hostname | default(vm.key) }}.{{ domain }}
+    ansible_host={{ vm.value.address | default('vm-' + vm.key + '.' + domain) }}
     groups={{ (['vms'] + (vm.value.inventory_groups | default([]))) | join(',') }}
     mac={{ vm.value.mac }}
+    local_ssh_access={{ vm.value.local_ssh_access | default(false) }}
   with_dict:
     - "{{ vm_inventory }}"
   loop_control:
