@@ -44,23 +44,21 @@
 
 - include_tasks: update-vm-definition.yml
   with_items:
-    - "{{ vms }}"
+    - "{{ host_vms }}"
   loop_control:
     loop_var: vm
   when:
-    - vm.host == inventory_hostname
     - vm.state in ["running"]
 
-# VM has to exist in registered_vms to set state or be created
 - name: VMs state
   virt:
     name: "{{ vm.name }}"
     state: "{{ vm.state }}"
-  with_items: "{{ vms }}"
+  with_items: "{{ host_vms }}"
   loop_control:
     loop_var: vm
   when:
-    - vm.host == inventory_hostname
+    # Avoid messing with already deleted VMs which are still in config
     - (vm.name in registered_vms.list_vms) or (vm.name in create_vms | map(attribute='name'))
 
 - name: Load any just created VMs

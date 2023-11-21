@@ -3,29 +3,51 @@
     command: list_vms
   register: registered_vms
 
-- command: /usr/bin/virsh dumpxml {{ vm.name }}
-  register: dom_xml
+- name: List of VMs designated for host
+  set_fact:
+    host_vms: "{{ host_vms + [item] }}"
   with_items: "{{ vms }}"
+  when:
+    - item.host == inventory_hostname
+
+- name: Load VM inventory
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({vm.name: { 'spec': vm, 'key': (vm.name | replace('-', '_'))} }) }}"
+  with_items: "{{ host_vms }}"
+  loop_control:
+    loop_var: vm
+
+- name: Dump VM XML
+  command: /usr/bin/virsh dumpxml {{ vm.value.spec.name }}
+  register: dom_xml
+  with_dict: "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
   when:
-    - vm.host == inventory_hostname
-    - vm.name in registered_vms.list_vms
+    - vm.value.spec.name in registered_vms.list_vms
 
 - set_fact:
-    "dom_dict_{{ item.vm.name |replace('-', '_')  }}": "{{ item.stdout | ansible.utils.from_xml }}"
+    "dom_dict_{{ item.vm.value.key }}": "{{ item.stdout | ansible.utils.from_xml }}"
   with_items:
     - "{{ dom_xml.results }}"
   when:
     - item.stdout is defined
 
-- name: Inventory existing VMs with MAC address for DHCP reservation
-  set_fact:
-    vm_inventory: "{{ vm_inventory | combine({item.vm.name: {'mac': vars['dom_dict_' + (item.vm.name | replace('-', '_'))].domain.devices.interface.mac['@address']} | combine(item.vm) }) }}"
-  with_items:
-    - "{{ dom_xml.results }}"
+- set_fact:
+    create_vms: "{{ create_vms + [item] }}"
+  with_items: "{{ host_vms }}"
   when:
-    - item.stdout is defined
+    - item.name not in registered_vms.list_vms
+    - item.state == "running"
+
+- debug:
+    msg: "VMs to be created: {{ create_vms }}"
+
+# Get VM interface MAC
+- include_tasks: get-vm-macs.yml
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
 
 - slurp:
     src: "/var/lib/libvirt/dnsmasq/{{ vm_admin_network_device }}.status"
@@ -34,47 +56,26 @@
 
 # Get IPs from admin NAT interface
 - include_tasks: get-admin-ips.yml
-  with_items: "{{ dom_xml.results }}"
+  with_items: "{{ host_vms }}"
   when:
-    - item.vm.local_ssh_access | default(false) | bool
+    - item.local_ssh_access | default(false) | bool
     - vm_admin_network_status_json.content is defined
+    - item.name in registered_vms.list_vms
 
-- set_fact:
-    create_vms: "{{ create_vms + [item] }}"
-  with_items: "{{ vms }}"
-  when:
-    - item.host == inventory_hostname
-    - item.name not in registered_vms.list_vms
-    - item.state == "running"
+- debug:
+    msg: "VMs: {{ vm_inventory }}"
 
-- name: Inventory VMs to create with new MAC address for DHCP reservation
-  set_fact:
-    vm_inventory: "{{ vm_inventory | combine({item.name: {'mac': '52:54:00' | random_mac } | combine(item) }) }}"
+- add_host: hostname={{ vm.name }}
+    ansible_host={{ vm_inventory[vm.name].address | default('vm-' + vm.name + '.' + domain) }}
+    groups={{ (['vms'] + (vm.inventory_groups | default([]))) | join(',') }}
+    mac={{ vm_inventory[vm.name].mac[vm_network_bridge_name] }}
+    local_ssh_access={{ vm.local_ssh_access | default(false) }}
+    eip={{ vm_inventory[vm.name].spec.eip | default() }}
   with_items:
-    - "{{ create_vms }}"
-
-- name: Inventory VMs with elastic IP for DHCP reservation
-  set_fact:
-    vm_inventory: "{{ vm_inventory | combine({vm.key: {'eip': vm.value.eip } | combine(vm_inventory[vm.key]) }) }}"
-  with_dict:
-    - "{{ vm_inventory }}"
+    - "{{ host_vms }}"
   loop_control:
     loop_var: vm
-  when:
-    - vm.value.state == "running"
-    - vm.value.eip is defined
-
-- add_host: hostname={{ vm.key }}
-    ansible_host={{ vm.value.address | default('vm-' + vm.key + '.' + domain) }}
-    groups={{ (['vms'] + (vm.value.inventory_groups | default([]))) | join(',') }}
-    mac={{ vm.value.mac }}
-    local_ssh_access={{ vm.value.local_ssh_access | default(false) }}
-    eip={{ vm.value.eip | default() }}
-  with_dict:
-    - "{{ vm_inventory }}"
-  loop_control:
-    loop_var: vm
-  when: vm.value.state == "running"
+  when: vm.state == "running"
 
 - debug:
     msg: "{{ groups }}"

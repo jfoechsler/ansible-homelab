@@ -1,6 +1,6 @@
 
 - set_fact:
-    vmfs_current: "{{ vmfs_current + [{'vm': vm.value.name, 'source': item.source['@dir'], 'target': item.target['@dir']}] }}"
+    vmfs_current: "{{ vmfs_current + [{'vm': vm.key, 'source': item.source['@dir'], 'target': item.target['@dir']}] }}"
   with_items:
-    - "{{ vars['dom_dict_' + vm.value.name | replace('-', '_')].domain.devices.filesystem }}"
+    - "{{ vars['dom_dict_' + vm.key | replace('-', '_')].domain.devices.filesystem }}"
   when: item.source['@dir'] is defined

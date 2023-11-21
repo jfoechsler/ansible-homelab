@@ -41,11 +41,22 @@
       <target dev="sda" bus="sata"/>
       <readonly/>
     </disk>
+     <filesystem type='mount' accessmode='passthrough'>
+      <driver type='virtiofs' queue='1024'/>
+      <source dir='{{ vm_data_path }}/vmfs'/>
+      <target dir='vmfs'/>
+      <binary path='/usr/libexec/virtiofsd' xattr='on'>
+        <cache mode='always'/>
+        <lock posix='on' flock='on'/>
+      </binary>
+    </filesystem>
+{% for network in vm.networks %}
     <interface type="network">
-      <mac address="{{ vm_inventory[vm.name]['mac'] }}"/>
-      <source network="{{ vm.network }}"/>
+      <mac address="{{ vm_inventory[vm.name]['mac'][network] }}"/>
+      <source network="{{ network }}"/>
       <model type="virtio"/>
     </interface>
+{% endfor %}
     <controller type='usb' index='0' model='qemu-xhci'>
       <address type='pci' domain='0x0000' bus='0x02' slot='0x00' function='0x0'/>
     </controller>

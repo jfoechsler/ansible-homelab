@@ -2,31 +2,31 @@
     path: "{{ vm_data_path }}/vmfs"
     state: directory
 
-- include_tasks: get-vmfs.yml
-  with_dict:
-    - "{{ vm_inventory }}"
-  loop_control:
-    loop_var: vm
+# Moved to vm template
+#- include_tasks: get-vmfs.yml
+#  with_dict:
+#    - "{{ vm_inventory }}"
+#  loop_control:
+#    loop_var: vm
 
-- name: Generate VMFS XML definition
-  template:
-    src: "virtiofs.xml.j2"
-    dest: "{{ vm_data_path }}/vmhost/vmfs.xml"
+#- name: Generate VMFS XML definition
+#  template:
+#    src: "virtiofs.xml.j2"
+#    dest: "{{ vm_data_path }}/vmhost/vmfs.xml"
 
-- set_fact:
-    vmfs_desired: "{{ vmfs_desired + [{'vm': vm.value.name, 'source': vm_data_path + '/vmfs', 'target': 'vmfs' }] }}"
-  with_dict:
-    - "{{ vm_inventory }}"
-  loop_control:
-    loop_var: vm
-  when: vm.value.state == "running"
-
-- debug:
-    msg: "{{vmfs_desired}}"
-
-- debug:
-    msg: "{{vmfs_current}}"
-
-- name: Attach vmfs
-  command: /usr/bin/virsh attach-device --persistent {{ item.vm }} {{ vm_data_path }}/vmhost/vmfs.xml
-  with_items: "{{ vmfs_desired|difference(vmfs_current) }}"
+#- set_fact:
+#    vmfs_desired: "{{ vmfs_desired + [{'vm': vm.key, 'source': vm_data_path + '/vmfs', 'target': 'vmfs' }] }}"
+#  with_dict: "{{ vm_inventory }}"
+#  loop_control:
+#    loop_var: vm
+#  when: vm.value.spec.state == "running"
+#
+#- debug:
+#    msg: "{{vmfs_desired}}"
+#
+#- debug:
+#    msg: "{{vmfs_current}}"
+#
+#- name: Attach vmfs
+#  command: /usr/bin/virsh attach-device --persistent {{ item.vm }} {{ vm_data_path }}/vmhost/vmfs.xml
+#  with_items: "{{ vmfs_desired|difference(vmfs_current) }}"

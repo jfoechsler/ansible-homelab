@@ -29,8 +29,8 @@
   register: updated_vm_list
   when: updated_undefined.undefine is defined
   until: vm.name not in updated_vm_list.list_vms
-  retries: 15
-  delay: 1
+  retries: 50
+  delay: 2
 
 - name: Define a VM for update or creation
   virt:
