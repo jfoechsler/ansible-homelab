@@ -1,6 +1,11 @@
 #cloud-config
 ssh_pwauth: False
-preserve_hostname: true
+preserve_hostname: {% if item.0.hostname is defined -%}false
+hostname: {{ item.0.hostname }}
+fqdn: {{ item.0.hostname }}.{{ domain }}
+{%- else -%}true
+{% endif %}
+
 ssh_authorized_keys:
   - {{ ssh_public_key }}
 
