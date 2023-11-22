@@ -12,7 +12,7 @@
     dom_macs: "{{ dom_macs | combine( { item: vars['dom_dict_' + vm.value.key].domain.devices.interface.mac['@address'] }) }}"
   loop: "{{ vm.value.spec.networks }}"
   when:
-    - vm.key not in create_vms | map(attribute='name')
+    - vm.key in registered_vms.list_vms
     - vm.value.spec.networks | length == 1
 
 - name: Find existing MAC for list of networks
@@ -22,8 +22,9 @@
   loop_control:
     index_var: idx
   when:
-    - vm.key not in create_vms | map(attribute='name')
+    - vm.key in registered_vms.list_vms
     - vm.value.spec.networks | length > 1
 
 - set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'mac': dom_macs } | combine(vm_inventory[vm.key]) }) }}"
+  when: dom_macs != {}

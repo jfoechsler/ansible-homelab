@@ -66,8 +66,8 @@
     msg: "VMs: {{ vm_inventory }}"
 
 - add_host: hostname={{ vm.name }}
-    ansible_host={{ vm_inventory[vm.name].address | default('vm-' + vm.name + '.' + domain) }}
-    dns={{ 'vm-' + vm.name + '.' + domain }}
+    ansible_host={{ vm_inventory[vm.name].address | default('vm-' + vm.name) }}
+    dns_host={{ 'vm-' + vm.name }}
     admin_ip={{ vm_inventory[vm.name].address | default('') }}
     groups={{ (['vms'] + (vm.inventory_groups | default([]))) | join(',') }}
     mac={{ vm_inventory[vm.name].mac[vm_network_bridge_name] }}

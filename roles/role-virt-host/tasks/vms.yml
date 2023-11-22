@@ -86,6 +86,7 @@
   when:
     - vm.state in ["destroyed", "shutdown"]
     - vm.delete_on_termination | default(false) | bool
+    - vm.name in registered_vms.list_vms
   register: undefined
 
 - name: Deactive undefined VMs LV
