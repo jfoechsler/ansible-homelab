@@ -1,11 +1,50 @@
-- name: Inventory existing VMs with admin IP address from status json
-  debug:
-    msg: "VM: {{ item.name }}, JSON: {{ vm_admin_network_status_json.content | b64decode | from_json }}"
-- set_fact:
-    vm_inventory: "{{ vm_inventory | combine({item.name: {'address': ip } | combine(vm_inventory[item.name]) }) }}"
-  vars:
-    mac: "{{ vm_inventory[item.name].mac[vm_admin_network_name] }}"
-    query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
-    json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
-    ip: "{{ json | json_query(query) | first }}"
-  when: (vm_admin_network_status_json.content | b64decode | from_json) != []
+- name: Get VMs admin IP address from status json
+  block:
+    - name: Increment the retry count
+      set_fact:
+        max_retries: "{{ 5 if max_retries is undefined else max_retries | int }}"
+        retry_count: "{{ 0 if retry_count is undefined or retry_count == 'reset' else retry_count | int + 1 }}"
+        retry_delay: "{{ 10 if retry_delay is undefined else retry_delay | int }}"
+    - name: Reload leases JSON
+      slurp:
+        src: "/var/lib/libvirt/dnsmasq/{{ vm_admin_network_device }}.status"
+      register: vm_admin_network_status_json
+
+    - debug:
+        msg: "VM: {{ vm_inventory[item.name] }}"
+    - debug:
+        msg: "Found IP for MAC: {{ ip }}"
+      vars:
+        mac: "{{ vm_inventory[item.name].mac[vm_admin_network_name] }}"
+        query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
+        json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
+        ip: "{{ json | json_query(query) }}"
+
+    - name: Store IP
+      set_fact:
+        vm_inventory: "{{ vm_inventory | combine({item.name: {'address': ip } | combine(vm_inventory[item.name]) }) }}"
+      vars:
+        mac: "{{ vm_inventory[item.name].mac[vm_admin_network_name] }}"
+        query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
+        json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
+        ip: "{{ json | json_query(query) | first }}"
+
+    - name: Reset retry count after success
+      set_fact:
+        retry_count: reset
+  rescue:
+    - name: Reset retry count if max retries reached (exit loop)
+      set_fact:
+        retry_count: reset
+      failed_when: retry_count == 'reset'
+      when: retry_count | int >= max_retries | int
+
+    - debug:
+        msg: "Task Group failed, let's give it another shot"
+    - name: Sleep between retries
+      wait_for:
+        timeout: "{{ retry_delay }}" # seconds
+      delegate_to: localhost
+      become: false
+
+    - include_tasks: get-admin-ips.yml

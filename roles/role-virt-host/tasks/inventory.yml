@@ -3,6 +3,12 @@
     command: list_vms
   register: registered_vms
 
+- name: List running VMs
+  virt:
+    command: list_vms
+    state: running
+  register: running_vms
+
 - name: List of VMs designated for host
   set_fact:
     host_vms: "{{ host_vms + [item] }}"
@@ -49,18 +55,12 @@
   loop_control:
     loop_var: vm
 
-- slurp:
-    src: "/var/lib/libvirt/dnsmasq/{{ vm_admin_network_device }}.status"
-  register: vm_admin_network_status_json
-  when: vm_admin_network_device is defined
-
 # Get IPs from admin NAT interface
 - include_tasks: get-admin-ips.yml
   with_items: "{{ host_vms }}"
   when:
     - item.local_ssh_access | default(false) | bool
-    - vm_admin_network_status_json.content is defined
-    - item.name in registered_vms.list_vms
+    - item.name in running_vms.list_vms
 
 - debug:
     msg: "VMs: {{ vm_inventory }}"

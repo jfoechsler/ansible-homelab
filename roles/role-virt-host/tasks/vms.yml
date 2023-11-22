@@ -67,6 +67,10 @@
   with_items:
     - "{{ updated_vms }}"
 
+- name: Register VMs created
+  set_fact:
+    create_vms: "{{ create_vms | difference(updated_vms) }}"
+
 - set_fact:
     "dom_dict_{{ item.item.name | replace('-', '_') }}": "{{ item.stdout | ansible.utils.from_xml }}"
   with_items:
@@ -76,11 +80,10 @@
   virt:
     command: undefine
     name: "{{ vm.name }}"
-  with_items: "{{ vms }}"
+  with_items: "{{ host_vms }}"
   loop_control:
     loop_var: vm
   when:
-    - vm.host == inventory_hostname
     - vm.state in ["destroyed", "shutdown"]
     - vm.delete_on_termination | default(false) | bool
   register: undefined
