@@ -8,6 +8,6 @@ dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | s
 
 {% for host in groups.vms %}
 {% if hostvars[host].local_ssh_access | bool and hostvars[host].admin_ip != '' %}
-address=/vm-{{ host }}.{{ domain }}/{{ hostvars[host].admin_ip }}
+address=/{{ hostvars[host].dns }}/{{ hostvars[host].admin_ip }}
 {% endif %}
 {% endfor %}
