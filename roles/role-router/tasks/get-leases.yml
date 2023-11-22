@@ -1,4 +1,8 @@
 ---
+- set_fact:
+    stored_group_leases: []
+    group_leases: []
+    dhcp_hosts: []
 
 - name: leases directory
   file:
@@ -14,22 +18,34 @@
   loop: "{{ lease_files.files }}"
   register: lease_slurps
 
-- set_fact:
-    group_leases: []
-- set_fact:
-    dhcp_hosts: []
+- name: List of 'host,mac' items desired based on inventory group
+  set_fact:
+    dhcp_hosts: "{{ dhcp_hosts + [item + ',' + hostvars[item].mac] }}"
+  loop: "{{ groups[group] }}"
+  when:
+    - groups[group] is defined
+    - hostvars[item].local_ssh_access | default(false) | bool is false
 
-- name: List with map of 'host,mac' names and the lease eIP value
+- name: Read stored leases list with map of 'host,mac' names and the lease IP value
+  set_fact:
+    stored_group_leases: "{{ stored_group_leases + [{'name': item.item.path | basename(), 'value': item.content | b64decode }] }}"
+  loop: "{{ lease_slurps.results  }}"
+
+- name: Import eIP list with map of 'host,mac' names and the lease IP value
   set_fact:
     group_leases: "{{ group_leases + [{'name': item + ',' + hostvars[item].mac, 'value': hostvars[item].eip }] }}"
   loop: "{{ groups[group] }}"
-  when: hostvars[item].eip != ''
+  when:
+    - groups[group] is defined
+    - hostvars[item].eip != ''
 
-- name: List with map of 'host,mac' names and the lease IP value
+- name: Import leases desired from stored leases
   set_fact:
-    group_leases: "{{ group_leases + [{'name': item.item.path | basename(), 'value': item.content | b64decode }] }}"
-  loop: "{{ lease_slurps.results  }}"
-  when: item.item.path | basename() not in (group_leases | map(attribute='name'))
+    group_leases: "{{ group_leases + [item] }}"
+  loop: "{{ stored_group_leases }}"
+  when:
+    - item.name is in dhcp_hosts
+    - item is not in group_leases
 
 - set_fact:
     dhcp_pool: "{{ query('sequence', dhcp_range) }}"
@@ -40,14 +56,6 @@
 
 - set_fact:
     dhcp_pool_free: "{{ dhcp_pool | difference(group_leases | map(attribute='value')) }}"
-
-- name: List of 'host,mac' items desired based on inventory group
-  set_fact:
-    dhcp_hosts: "{{ dhcp_hosts + [item + ',' + hostvars[item].mac] }}"
-  loop: "{{ groups[group] }}"
-  when:
-    - groups[group] is defined
-    - hostvars[item].local_ssh_access | default(false) | bool is false
 
 - name: Add leases from free pool for hosts not already in leases
   set_fact:
@@ -60,7 +68,7 @@
   file:
     path: "{{ lease_dir }}/{{ group }}/{{ item.name }}"
     state: absent
-  loop: "{{ group_leases }}"
+  loop: "{{ stored_group_leases }}"
   when: item.name is not in dhcp_hosts
 
 - name: Write lease files
@@ -68,7 +76,6 @@
     dest: "{{ lease_dir }}/{{ group }}/{{ item.name }}"
     content: "{{ item.value }}"
   loop: "{{ group_leases }}"
-  when: item.name is in dhcp_hosts
 
 - name: Store group leases fact
   set_fact:
