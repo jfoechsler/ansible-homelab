@@ -2,7 +2,7 @@
 - name: vm lvm volume
   lvol:
     lv: "vm-{{ item.name }}"
-    vg: "{{ vm_volume_group }}"
+    vg: "{{ item.vm_volume_group | default(vm_volume_group) }}"
     size: "{{ item.disk }}G"
   with_items: "{{ create_vms }}"
 
@@ -13,7 +13,7 @@
 #  with_items: "{{ create_vms }}"
 
 - name: Write image to lv
-  shell: xz -dc {{ vm_images }}/{{ vm_image[item.image] }} > /dev/{{ vm_volume_group }}/vm-{{ item.name }}
+  shell: xz -dc {{ vm_images }}/{{ vm_image[item.image] }} > /dev/{{ item.vm_volume_group | default(vm_volume_group) }}/vm-{{ item.name }}
   with_items: "{{ create_vms }}"
 
 - file:
@@ -91,7 +91,7 @@
 - name: Deactive undefined VMs LV
   lvol:
     lv: "vm-{{ item.vm.name }}"
-    vg: "{{ vm_volume_group }}"
+    vg: "{{ item.vm.vm_volume_group | default(vm_volume_group) }}"
     active: false
   with_items: "{{ undefined.results }}"
   when: item.undefine is defined
@@ -99,7 +99,7 @@
 - name: Remove undefined VMs LV
   lvol:
     lv: "vm-{{ item.vm.name }}"
-    vg: "{{ vm_volume_group }}"
+    vg: "{{ item.vm.vm_volume_group | default(vm_volume_group) }}"
     state: absent
     force: true
   with_items: "{{ undefined.results }}"

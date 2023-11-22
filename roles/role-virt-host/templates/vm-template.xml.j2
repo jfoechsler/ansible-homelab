@@ -32,7 +32,7 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="block" device="disk">
       <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
-      <source dev="/dev/{{ vm_volume_group }}/vm-{{ vm.name }}"/>
+      <source dev="/dev/{{ vm.vm_volume_group | default(vm_volume_group) }}/vm-{{ vm.name }}"/>
       <target dev="vda" bus="virtio"/>
       <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </disk>
