@@ -1,17 +1,18 @@
 default_features:
   dhcpd:
     enabled: true
+    # provide router address to clients instead of own address
+    #router: 192.168.0.1
   dns:
-    enabled: true
-    public:
-      - '1.1.1.1'
-      - '8.8.8.8'
+    # toggle not implemented
+    #enabled: true
+    # upstream servers
+#    servers:
+#      - '1.1.1.1'
+#      - '8.8.8.8'
   internal_services_firewall:
     - 'dns'
     - 'dhcp'
-    - 'samba'
-    - 'vnc-server'
-    - 'syncthing'
 lease_dir: "/var/local/ansible-dnsmasq"
 dnsmasq_state_needed: started
 leases: {}

@@ -3,4 +3,6 @@
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
-{{ vars['ansible_' + inside_nic].ipv4.address }} {{ inventory_hostname }} {{ inventory_hostname }}.{{ domain }}
+{% if ansible_hostname != 'localhost' -%}
+{{ vars['ansible_' + inside_nic].ipv4.address }} {{ ansible_hostname }} {{ ansible_hostname }}.{{ domain }}
+{%- endif -%}

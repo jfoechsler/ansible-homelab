@@ -13,10 +13,14 @@ interface={{ inside_nic }}
 except-interface=lo
 bind-interfaces
 
+{% if router_features_merged.dns.servers is defined %}
 no-resolv
-{% for server in router_features_merged.dns.public %}
+{% for server in router_features_merged.dns.servers %}
 server={{ server }}
 {% endfor %}
+{% else %}
+#no-resolv
+{% endif %}
 
 {% if router_features_merged.dhcpd.router is defined %}
 dhcp-option=option:router,{{ router_features_merged.dhcpd.router }}
