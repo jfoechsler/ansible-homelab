@@ -1,0 +1,2 @@
+- include_tasks: network-manager.yml
+- include_tasks: network-connections.yml

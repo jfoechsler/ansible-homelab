@@ -1,0 +1,5 @@
+# dns mode none if dns_servers
+  # remove resolv symlink
+  # disable+mask resolved
+#no-auto-default for static interfaces
+#restart NM

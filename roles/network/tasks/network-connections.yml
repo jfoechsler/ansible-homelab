@@ -1,0 +1,17 @@
+- name: Network connection files
+  template:
+    src: connection.nmconnection.j2
+    dest: /etc/NetworkManager/system-connections/{{ item.id }}.nmconnection
+    mode: 0600
+  loop: "{{ network.connections }}"
+  register: connection
+
+- name: Reload network connection down
+  command: nmcli conn down {{ item.item.id }}
+  loop: "{{ connection.results }}"
+  when: connection.changed
+
+- name: Reload network connection up
+  command: nmcli conn up {{ item.item.id }}
+  loop: "{{ connection.results }}"
+  when: connection.changed

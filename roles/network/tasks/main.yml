@@ -1,0 +1,2 @@
+- include_tasks: network.yml
+  when: network is defined
