@@ -6,12 +6,17 @@
   loop: "{{ network.connections }}"
   register: connection
 
-- name: Reload network connection down
+- name: Reload network connection from disk
+  command: nmcli conn reload {{ item.item.id }}
+  loop: "{{ connection.results }}"
+  when: item.changed
+
+- name: network connection down
   command: nmcli conn down {{ item.item.id }}
   loop: "{{ connection.results }}"
   when: connection.changed
 
-- name: Reload network connection up
+- name: network connection up
   command: nmcli conn up {{ item.item.id }}
   loop: "{{ connection.results }}"
   when: connection.changed
