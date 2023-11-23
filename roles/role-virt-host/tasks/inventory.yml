@@ -72,7 +72,8 @@
     groups={{ (['vms'] + (vm.inventory_groups | default([]))) | join(',') }}
     mac={{ vm_inventory[vm.name].mac[vm_network_bridge_name] }}
     local_ssh_access={{ vm.local_ssh_access | default(false) }}
-    eip={{ vm_inventory[vm.name].spec.eip | default() }}
+    eip={{ vm_inventory[vm.name].spec.eip if vm_inventory[vm.name].spec.eip is defined else omit }}
+    eip_address={{ prefix_24 + '.' + vm_inventory[vm.name].spec.eip|string if vm_inventory[vm.name].spec.eip is defined else omit }}
   with_items:
     - "{{ host_vms }}"
   loop_control:

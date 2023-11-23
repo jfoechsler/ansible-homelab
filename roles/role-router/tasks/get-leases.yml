@@ -37,7 +37,7 @@
   loop: "{{ groups[group] }}"
   when:
     - groups[group] is defined
-    - hostvars[item].eip != ''
+    - hostvars[item].eip is defined
 
 - name: Import leases desired from stored leases
   set_fact:
@@ -45,7 +45,7 @@
   loop: "{{ stored_group_leases }}"
   when:
     - item.name is in dhcp_hosts
-    - item is not in group_leases
+    - item.name is not in (group_leases | map(attribute='name'))
 
 - set_fact:
     dhcp_pool: "{{ query('sequence', dhcp_range) }}"
