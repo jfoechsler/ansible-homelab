@@ -11,6 +11,10 @@
   loop: "{{ connection.results }}"
   when: item.changed
 
+- name: network connection up
+  command: nmcli conn up {{ item.id }}
+  loop: "{{ network.connections }}"
+
 - name: network connection down
   command: nmcli conn down {{ item.item.id }}
   loop: "{{ connection.results }}"
