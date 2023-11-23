@@ -33,6 +33,17 @@
     - ssh
   when: outside_nic is defined
 
+- name: Remove services in firewall internal
+  firewalld:
+    service: "{{ item }}"
+    state: disabled
+    zone: internal
+    permanent: true
+    immediate: true
+  loop:
+    - ssh
+  when: local_ssh_access | default(false) | bool
+
 - name: Create wlan zone
   firewalld:
     zone: wlan
