@@ -1,5 +1,30 @@
-# dns mode none if dns_servers
-  # remove resolv symlink
-  # disable+mask resolved
-#no-auto-default for static interfaces
-#restart NM
+- name: Stat resolv.conf
+  stat: path=/etc/resolv.conf
+  register: resolv_conf
+
+- name: Remove resolv.conf if symlink
+  file:
+    path: /etc/resolv.conf
+    state: absent
+  when:
+    - resolv_conf.stat.islnk|default(false) == true
+
+- name: resolv.conf file
+  template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+
+- name: Network manager config file
+  template:
+    src: networkmanager.conf.j2
+    # Not working for some reason
+    #dest: /etc/NetworkManager/conf.d/ansible-network.conf
+    dest: /etc/NetworkManager/NetworkManager.conf
+  notify: nm-restart
+
+- name: resolved service
+  systemd:
+    name: "systemd-resolved"
+    state: "stopped"
+    enabled: "no"
+    masked: "yes"

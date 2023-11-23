@@ -1,0 +1,4 @@
+---
+
+- name: nm-restart
+  systemd: name=NetworkManager state=restarted

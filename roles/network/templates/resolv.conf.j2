@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+nameserver {{ vars['ansible_' + inside_nic].ipv4.address }}
+{% if network.dns_servers is defined %}
+{% for server in network.dns_servers %}
+nameserver {{ server }}
+{% endfor %}
+{% endif %}
+search {{ domain }}
