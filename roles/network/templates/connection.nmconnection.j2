@@ -1,12 +1,24 @@
 [connection]
 id={{ item.id }}
 type=ethernet
+{% if item.zone is defined %}
 zone={{ item.zone }}
-autoconnect=yes
+{% endif %}
+autoconnect=true
 interface-name={{ item.interface_name }}
 
 [ethernet]
 
 [ipv4]
+{% if item.ipv4.address1 is defined %}
 address1={{ item.ipv4.address1 }}
 method=manual
+{% else %}
+method=auto
+{% endif %}
+{% if item.ipv4.ignore_auto_dns | default(false) | bool %}
+ignore-auto-dns=true
+{% endif %}
+{% if item.ipv4.ignore_auto_routes | default(false) | bool %}
+ignore-auto-routes=true
+{% endif %}

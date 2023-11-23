@@ -1,26 +1,31 @@
 - name: Network connection files
   template:
     src: connection.nmconnection.j2
-    dest: /etc/NetworkManager/system-connections/{{ item.id }}.nmconnection
+    dest: "/etc/NetworkManager/system-connections/{{ item.file | default(item.id) }}.nmconnection"
     mode: 0600
   loop: "{{ network.connections }}"
   register: connection
 
 - name: Reload network connection from disk
-  command: nmcli conn reload {{ item.item.id }}
+  command: "nmcli conn reload '{{ item.item.id }}'"
   loop: "{{ connection.results }}"
   when: item.changed
 
 - name: network connection up
-  command: nmcli conn up {{ item.id }}
+  command: "nmcli conn up '{{ item.id }}'"
   loop: "{{ network.connections }}"
+  changed_when: False
 
 - name: network connection down
-  command: nmcli conn down {{ item.item.id }}
+  command: "nmcli conn down '{{ item.item.id }}'"
   loop: "{{ connection.results }}"
-  when: connection.changed
+  when:
+    - connection.changed
+    - not (item.item.suppress_reload | default(false) | bool)
 
 - name: network connection up
-  command: nmcli conn up {{ item.item.id }}
+  command: "nmcli conn up '{{ item.item.id }}'"
   loop: "{{ connection.results }}"
-  when: connection.changed
+  when:
+    - connection.changed
+    - not (item.item.suppress_reload | default(false) | bool)

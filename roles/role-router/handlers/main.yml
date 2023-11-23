@@ -1,3 +1,6 @@
 ---
 
+- name: reload-firewall
+  command: firewall-cmd --reload
+
 - import_tasks: ../../handlers/main.yml

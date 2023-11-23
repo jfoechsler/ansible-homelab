@@ -19,7 +19,15 @@
     state: enabled
     permanent: true
     immediate: true
+  when: outside_nic is defined
+
+- name: Enable external masquerade
+  firewalld:
+    zone: external
+    permanent: true
+    immediate: true
     masquerade: true
+    state: enabled
   when: outside_nic is defined
 
 - name: Remove services in firewall external
@@ -48,12 +56,8 @@
     zone: wlan
     state: present
     permanent: true
-  register: wlan_zone
+  notify: reload-firewall
 #  when: wlan_nic is defined
-
-- name: Reload firewall to enable wlan zone
-  command: firewall-cmd --reload
-  when: wlan_zone.changed
 
 - name: Allow services in firewall
   firewalld:
@@ -66,3 +70,10 @@
   with_nested:
     - ['internal', 'wlan']
     - "{{ router_features_merged.internal_services_firewall }}"
+
+# Policies
+- name: policy_int_to_ext
+  template:
+    src: policy_int_to_ext.xml.j2
+    dest: /etc/firewalld/policies/policy_int_to_ext.xml
+  notify: reload-firewall

@@ -20,7 +20,13 @@
     # Not working for some reason
     #dest: /etc/NetworkManager/conf.d/ansible-network.conf
     dest: /etc/NetworkManager/NetworkManager.conf
-  notify: nm-restart
+  register: nm_config
+
+- name: Network manager restart
+  systemd:
+    name: "NetworkManager"
+    state: "restarted"
+  when: nm_config.changed
 
 - name: resolved service
   systemd:
