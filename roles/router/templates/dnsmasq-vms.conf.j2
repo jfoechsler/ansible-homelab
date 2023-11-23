@@ -1,7 +1,0 @@
-# {{ ansible_managed }}
-
-{% for dhcp_host in leases.vms %}
-{% if hostvars[(dhcp_host.name | split(','))[0]] is defined %}
-dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].ansible_host }},{{ prefix_24 }}.{{ dhcp_host.value }}
-{% endif %}
-{% endfor %}
