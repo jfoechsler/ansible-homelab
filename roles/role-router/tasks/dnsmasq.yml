@@ -32,7 +32,7 @@
   template:
     src: dnsmasq.dhcpd-disabled.conf.j2
     dest: /etc/dnsmasq.d/dhcpd.conf
-  register: dnsmasq_dhcpd_conf
+  register: dnsmasq_dhcpd_disabled_conf
   when: not router_features_merged.dhcpd.enabled
 
 - name: unit override directory
@@ -51,6 +51,7 @@
     dnsmasq_state_needed: restarted
   when: dnsmasq_conf.changed
       or dnsmasq_dhcpd_conf.changed
+      or dnsmasq_dhcpd_disabled_conf.changed
       or hosts_conf.changed
       or unit_conf.changed
 
