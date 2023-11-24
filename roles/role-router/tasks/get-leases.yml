@@ -6,11 +6,11 @@
 
 - name: leases directory
   file:
-    path: "{{ lease_dir }}/{{ group }}"
+    path: "{{ lease_dir }}/{{ reservations | default(group) }}"
     state: directory
 
 - find:
-    paths: "{{ lease_dir }}/{{ group }}"
+    paths: "{{ lease_dir }}/{{ reservations | default(group) }}"
   register: lease_files
 
 - slurp:
@@ -23,8 +23,17 @@
     dhcp_hosts: "{{ dhcp_hosts + [item + ',' + hostvars[item].mac] }}"
   loop: "{{ groups[group] }}"
   when:
+    - group is defined
     - groups[group] is defined
     - hostvars[item].local_ssh_access | default(false) | bool is false
+
+- name: List of 'host,mac' items desired based on reservations
+  set_fact:
+    dhcp_hosts: "{{ dhcp_hosts + [item.name + ',' + item.mac] }}"
+  loop: "{{ dhcp_reservations[reservations] }}"
+  when:
+    - reservations is defined
+    - dhcp_reservations[reservations] is defined
 
 - name: Read stored leases list with map of 'host,mac' names and the lease IP value
   set_fact:
@@ -36,6 +45,7 @@
     group_leases: "{{ group_leases + [{'name': item + ',' + hostvars[item].mac, 'value': hostvars[item].eip }] }}"
   loop: "{{ groups[group] }}"
   when:
+    - group is defined
     - groups[group] is defined
     - hostvars[item].eip is defined
 
@@ -66,17 +76,17 @@
 
 - name: Delete lease files not in desired list
   file:
-    path: "{{ lease_dir }}/{{ group }}/{{ item.name }}"
+    path: "{{ lease_dir }}/{{ reservations | default(group) }}/{{ item.name }}"
     state: absent
   loop: "{{ stored_group_leases }}"
   when: item.name is not in dhcp_hosts
 
 - name: Write lease files
   copy:
-    dest: "{{ lease_dir }}/{{ group }}/{{ item.name }}"
+    dest: "{{ lease_dir }}/{{ reservations | default(group) }}/{{ item.name }}"
     content: "{{ item.value }}"
   loop: "{{ group_leases }}"
 
 - name: Store group leases fact
   set_fact:
-    leases: "{{leases | combine({group: group_leases})}}"
+    leases: "{{leases | combine({reservations | default(group): group_leases})}}"

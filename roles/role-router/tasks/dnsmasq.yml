@@ -1,14 +1,14 @@
 ---
 - include_tasks: get-leases.yml
   vars:
-    group: lan_hosts
+    reservations: lan_hosts
     ip_start: "{{ lan_ip_start }}"
     ip_end: "{{ lan_ip_end }}"
   when: router_features_merged.dhcpd.enabled
 
 - include_tasks: get-leases.yml
   vars:
-    group: wlan_hosts
+    reservations: wlan_hosts
     ip_start: "{{ wlan_ip_start }}"
     ip_end: "{{ wlan_ip_end }}"
   when:
