@@ -5,9 +5,3 @@
 dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].ansible_host }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
 {% endif %}
 {% endfor %}
-
-{% for host in groups.vms %}
-{% if hostvars[host].local_ssh_access | bool and hostvars[host].admin_ip != '' %}
-address=/{{ hostvars[host].dns_host }}.{{ domain }}/{{ hostvars[host].admin_ip }}
-{% endif %}
-{% endfor %}

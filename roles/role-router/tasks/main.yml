@@ -14,7 +14,6 @@
   template:
     src: hosts.j2
     dest: /etc/hosts
-  register: hosts_conf
 
 - include_tasks: firewall.yml
 - include_tasks: dnsmasq.yml

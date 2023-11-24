@@ -23,3 +23,8 @@
 - include_tasks: vm-data.yml
 - include_tasks: vmfs.yml
 - include_tasks: inventory.yml
+
+- name: hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts

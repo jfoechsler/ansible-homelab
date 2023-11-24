@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# Old school hosts file sync for private VMs
+{% for host in groups.vms %}
+{% if hostvars[host].local_ssh_access | bool and hostvars[host].admin_ip != '' %}
+{{ hostvars[host].admin_ip }} {{ hostvars[host].dns_host }} {{ hostvars[host].dns_host }}.{{ domain }}
+{% endif %}
+{% endfor %}
