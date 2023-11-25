@@ -5,3 +5,6 @@
 
 - name: systemd resolved restart
   systemd: name=systemd-resolved state=restarted
+
+- name: reload-firewall
+  command: firewall-cmd --reload

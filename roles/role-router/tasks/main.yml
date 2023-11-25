@@ -4,9 +4,7 @@
 - name: Install packages
   dnf:
     name: "
-      dnsmasq,
-      python-firewall,
-      firewalld
+      dnsmasq
       "
     state: present
 
@@ -16,5 +14,4 @@
     dest: /etc/hosts
   register: hosts_conf
 
-- include_tasks: firewall.yml
 - include_tasks: dnsmasq.yml

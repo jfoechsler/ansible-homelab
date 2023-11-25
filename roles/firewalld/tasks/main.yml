@@ -1,0 +1,83 @@
+- name: Install packages
+  dnf:
+    name: "
+      python-firewall,
+      firewalld
+      "
+    state: present
+
+- name: firewalld service
+  systemd:
+    name: "firewalld"
+    state: "started"
+    enabled: "yes"
+
+- name: Create zone
+  firewalld:
+    zone: "{{ item.name }}"
+    state: present
+    permanent: true
+  with_items: "{{ firewalld.zones }}"
+  register: zone_create
+
+- name: Reload firewall to add zone
+  command: firewall-cmd --reload
+  when: lookup('ansible.utils.index_of', zone_create.results, 'eq', true, 'changed') | length > 0
+
+- name: Enable zone
+  firewalld:
+    interface: "{{ item.interface }}"
+    zone: "{{ item.name }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items: "{{ firewalld.zones }}"
+
+- name: Enable masquerade
+  firewalld:
+    zone: "{{ item.name }}"
+    permanent: true
+    immediate: true
+    masquerade: true
+    state: enabled
+  with_items: "{{ firewalld.zones }}"
+  when: item.masquerade | default(false) | bool
+
+#- name: Toggle services in firewall internal
+#  firewalld:
+#    service: "{{ item }}"
+#    state: "{{ local_ssh_access | default(false) | bool | ternary('disabled', 'enabled') }}"
+#    zone: internal
+#    permanent: true
+#    immediate: true
+#  loop:
+#    - ssh
+
+- name: Allow services in firewall
+  firewalld:
+    service: "{{ item.1 }}"
+    state: enabled
+    zone: "{{ item.0.name }}"
+    permanent: true
+    immediate: true
+  with_subelements:
+    - "{{ firewalld.zones }}"
+    - service_allow
+
+- name: Remove services in firewall
+  firewalld:
+    service: "{{ item.1 }}"
+    state: disabled
+    zone: "{{ item.0.name }}"
+    permanent: true
+    immediate: true
+  with_subelements:
+    - "{{ firewalld.zones }}"
+    - service_remove
+
+- name: Policies
+  copy:
+    dest: /etc/firewalld/policies/{{ item.name }}.xml
+    content: "{{ item.xml }}"
+  loop: "{{ firewalld.policies }}"
+  notify: reload-firewall

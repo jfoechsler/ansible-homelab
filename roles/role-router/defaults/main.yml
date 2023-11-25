@@ -10,9 +10,7 @@ default_features:
     servers:
       - '1.1.1.1'
       - '8.8.8.8'
-  internal_services_firewall:
-    - 'dns'
-    - 'dhcp'
+
 lease_dir: "/var/local/ansible-dnsmasq"
 dnsmasq_state_needed: started
 leases: {}
