@@ -47,7 +47,7 @@
   loop_control:
     loop_var: vm
   when:
-    - vm.value.spec.state in ["running"]
+    - vm.value.spec.state in ['running', 'created']
 
 - name: VMs state
   virt:
@@ -59,6 +59,7 @@
   when:
     # Avoid messing with already deleted VMs which are still in config
     - (vm.key in registered_vms.list_vms) or (vm.key in create_vms | map(attribute='name'))
+    - vm.value.spec.state != 'created'
 
 - name: Load any just created VMs
   command: /usr/bin/virsh dumpxml {{ item.name }}

@@ -69,7 +69,7 @@
     loop_var: vm
   when:
     - vm.key not in registered_vms.list_vms
-    - vm.value.spec.state == "running"
+    - vm.value.spec.state in ['running', 'created']
 
 - debug:
     msg: "VMs to be created: {{ create_vms }}"
@@ -96,7 +96,7 @@
     ansible_host={{ vm.value.address | default('vm-' + vm.key) }}
     dns_host={{ 'vm-' + vm.key }}
     admin_ip={{ vm.value.address | default('') }}
-    groups={{ (['vms'] + (['running_vms'] + (vm.value.spec.inventory_groups | default([])) if vm.value.spec.state == 'running' else [])) | join(',') }}
+    groups={{ (['vms'] + (['running_vms'] + (vm.value.spec.inventory_groups | default([])) if vm.key in running_vms.list_vms else [])) | join(',') }}
     mac={{ vm.value.mac[vm_network_bridge_name] if vm.value.mac[vm_network_bridge_name] is defined else omit }}
     static_ip={{ vm.value.spec.static_ip if vm.value.spec.static_ip is defined else omit }}
     eip={{ vm.value.eip if vm.value.eip is defined else omit }}
