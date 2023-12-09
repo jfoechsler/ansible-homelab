@@ -1,8 +1,0 @@
-# {{ ansible_managed }}
-
-[Resolve]
-# Resolve locally via the local dnsmasq. Currently no support for specific domain with rest going to interface specific DNS.
-DNS={{ vars['ansible_' + inside_nic].ipv4.address }}#{{ inventory_hostname }}.{{ domain }}
-
-# Add search suffixes when resolving single-label hostnames
-Domains={{ domain }}

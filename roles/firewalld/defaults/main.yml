@@ -1,4 +1,5 @@
 
 firewalld:
+  enabled: false
   zones: []
   policies: []
