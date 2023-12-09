@@ -4,26 +4,26 @@
 - name: Create new MAC address for DHCP reservation
   set_fact:
     dom_macs: "{{ dom_macs | combine( { item: '52:54:00' | random_mac }) }}"
-  loop: "{{ vm.value.spec.networks }}"
+  loop: "{{ vm.value.networks }}"
   when: vm.key in create_vms | map(attribute='name')
 
 - name: Find existing MAC
   set_fact:
     dom_macs: "{{ dom_macs | combine( { item: vars['dom_dict_' + vm.value.key].domain.devices.interface.mac['@address'] }) }}"
-  loop: "{{ vm.value.spec.networks }}"
+  loop: "{{ vm.value.networks }}"
   when:
     - vm.key in registered_vms.list_vms
-    - vm.value.spec.networks | length == 1
+    - vm.value.networks | length == 1
 
 - name: Find existing MAC for list of networks
   set_fact:
     dom_macs: "{{ dom_macs | combine( { item: vars['dom_dict_' + vm.value.key].domain.devices.interface[idx].mac['@address'] }) }}"
-  loop: "{{ vm.value.spec.networks }}"
+  loop: "{{ vm.value.networks }}"
   loop_control:
     index_var: idx
   when:
     - vm.key in registered_vms.list_vms
-    - vm.value.spec.networks | length > 1
+    - vm.value.networks | length > 1
 
 - set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'mac': dom_macs } | combine(vm_inventory[vm.key]) }) }}"

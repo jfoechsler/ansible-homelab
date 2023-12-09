@@ -13,6 +13,7 @@
     - "{{ vms }}"
   loop_control:
     loop_var: vm
+  when: vm.host == inventory_hostname
 
 - set_fact:
     vm_mounts_desired: "{{ vm_mounts_desired + [{'vm': item.value.vm, 'source': '/dev/' + data_vg + '/vmdata-' + item.value.name, 'target': item.value.device }] }}"

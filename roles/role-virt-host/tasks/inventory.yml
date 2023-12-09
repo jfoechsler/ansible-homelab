@@ -9,19 +9,34 @@
     state: running
   register: running_vms
 
-- name: List of VMs designated for host
+- name: Initialize VM inventory
   set_fact:
-    host_vms: "{{ host_vms + [item] }}"
-  with_items: "{{ vms }}"
-  when:
-    - item.host == inventory_hostname
+    vm_inventory: {}
 
 - name: Load VM inventory
   set_fact:
-    vm_inventory: "{{ vm_inventory | combine({vm.name: { 'spec': vm, 'key': (vm.name | replace('-', '_'))} }) }}"
-  with_items: "{{ host_vms }}"
+    vm_inventory: "{{ vm_inventory | combine({vm.name: { 'spec': vm, 'key': (vm.name | replace('-', '_')), 'networks': [] } }) }}"
+  with_items: "{{ vms }}"
   loop_control:
     loop_var: vm
+  when:
+    - vm.host == inventory_hostname
+
+- name: Inventory VM admin network
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({ vm.key: { 'networks': vm.value.networks + [vm_admin_network_name] } }, recursive=True) }}"
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
+  when: vm.value.spec.admin_network | default(false) | bool
+
+- name: Inventory VM bridge network
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({ vm.key: { 'networks': vm.value.networks + [vm_network_bridge_name] } }, recursive=True) }}"
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
+  when: vm.value.spec.bridge_network | default(false) | bool
 
 - name: Dump VM XML
   command: /usr/bin/virsh dumpxml {{ vm.value.spec.name }}
@@ -40,11 +55,13 @@
     - item.stdout is defined
 
 - set_fact:
-    create_vms: "{{ create_vms + [item] }}"
-  with_items: "{{ host_vms }}"
+    create_vms: "{{ create_vms + [vm.value.spec] }}"
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
   when:
-    - item.name not in registered_vms.list_vms
-    - item.state == "running"
+    - vm.key not in registered_vms.list_vms
+    - vm.value.spec.state == "running"
 
 - debug:
     msg: "VMs to be created: {{ create_vms }}"
@@ -57,28 +74,29 @@
 
 # Get IPs from admin NAT interface
 - include_tasks: get-admin-ips.yml
-  with_items: "{{ host_vms }}"
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
   when:
-    - item.local_ssh_access | default(false) | bool
-    - item.name in running_vms.list_vms
+    - vm.value.spec.admin_network | default(false) | bool
+    - vm.key in running_vms.list_vms
 
 - debug:
     msg: "VMs: {{ vm_inventory }}"
 
-- add_host: hostname={{ vm.name }}
-    ansible_host={{ vm_inventory[vm.name].address | default('vm-' + vm.name) }}
-    dns_host={{ 'vm-' + vm.name }}
-    admin_ip={{ vm_inventory[vm.name].address | default('') }}
-    groups={{ (['vms'] + (vm.inventory_groups | default([]))) | join(',') }}
-    mac={{ vm_inventory[vm.name].mac[vm_network_bridge_name] }}
-    local_ssh_access={{ vm.local_ssh_access | default(false) }}
-    eip={{ vm_inventory[vm.name].spec.eip if vm_inventory[vm.name].spec.eip is defined else omit }}
-    eip_address={{ prefix_24 + '.' + vm_inventory[vm.name].spec.eip|string if vm_inventory[vm.name].spec.eip is defined else omit }}
-  with_items:
-    - "{{ host_vms }}"
+- add_host: hostname={{ vm.key }}
+    ansible_host={{ vm.value.address | default('vm-' + vm.key) }}
+    dns_host={{ 'vm-' + vm.key }}
+    admin_ip={{ vm.value.address | default('') }}
+    groups={{ (['vms'] + (['running_vms'] + (vm.value.spec.inventory_groups | default([])) if vm.value.spec.state == 'running' else [])) | join(',') }}
+    mac={{ vm.value.mac[vm_network_bridge_name] if vm.value.mac[vm_network_bridge_name] is defined else omit }}
+    static_ip={{ vm.value.spec.static_ip if vm.value.spec.static_ip is defined else omit }}
+    eip={{ vm.value.spec.eip if vm.value.spec.eip is defined else omit }}
+    eip_address={{ prefix_24 + '.' + vm.value.spec.eip|string if vm.value.spec.eip is defined else omit }}
+  with_dict:
+    - "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
-  when: vm.state == "running"
 
 - debug:
     msg: "{{ groups }}"

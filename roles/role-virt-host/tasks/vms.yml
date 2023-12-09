@@ -43,23 +43,22 @@
     - ['meta-data', 'user-data']
 
 - include_tasks: update-vm-definition.yml
-  with_items:
-    - "{{ host_vms }}"
+  with_dict: "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
   when:
-    - vm.state in ["running"]
+    - vm.value.spec.state in ["running"]
 
 - name: VMs state
   virt:
-    name: "{{ vm.name }}"
-    state: "{{ vm.state }}"
-  with_items: "{{ host_vms }}"
+    name: "{{ vm.key }}"
+    state: "{{ vm.value.spec.state }}"
+  with_dict: "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
   when:
     # Avoid messing with already deleted VMs which are still in config
-    - (vm.name in registered_vms.list_vms) or (vm.name in create_vms | map(attribute='name'))
+    - (vm.key in registered_vms.list_vms) or (vm.key in create_vms | map(attribute='name'))
 
 - name: Load any just created VMs
   command: /usr/bin/virsh dumpxml {{ item.name }}
@@ -79,28 +78,28 @@
 - name: Undefine VMs for deletion
   virt:
     command: undefine
-    name: "{{ vm.name }}"
-  with_items: "{{ host_vms }}"
+    name: "{{ vm.key }}"
+  with_dict: "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
   when:
-    - vm.state in ["destroyed", "shutdown"]
-    - vm.delete_on_termination | default(false) | bool
-    - vm.name in registered_vms.list_vms
+    - vm.value.spec.state in ["destroyed"]
+    - vm.value.spec.delete_on_termination | default(false) | bool
+    - vm.key in registered_vms.list_vms
   register: undefined
 
 - name: Deactive undefined VMs LV
   lvol:
-    lv: "vm-{{ item.vm.name }}"
-    vg: "{{ item.vm.vm_volume_group | default(vm_volume_group) }}"
+    lv: "vm-{{ item.vm.key }}"
+    vg: "{{ item.vm.value.spec.vm_volume_group | default(vm_volume_group) }}"
     active: false
   with_items: "{{ undefined.results }}"
   when: item.undefine is defined
 
 - name: Remove undefined VMs LV
   lvol:
-    lv: "vm-{{ item.vm.name }}"
-    vg: "{{ item.vm.vm_volume_group | default(vm_volume_group) }}"
+    lv: "vm-{{ item.vm.key }}"
+    vg: "{{ item.vm.value.spec.vm_volume_group | default(vm_volume_group) }}"
     state: absent
     force: true
   with_items: "{{ undefined.results }}"

@@ -1,7 +1,7 @@
 <domain type="kvm">
-  <name>{{ vm.name }}</name>
+  <name>{{ vm.key }}</name>
   <memory unit="KiB">4194304</memory>
-  <vcpu placement="static">{{ vm.vcpu | default(2) }}</vcpu>
+  <vcpu placement="static">{{ vm.value.spec.vcpu | default(2) }}</vcpu>
   <os>
     <type arch="x86_64" machine="pc-q35-6.2">hvm</type>
     <boot dev="hd"/>
@@ -32,12 +32,12 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="block" device="disk">
       <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
-      <source dev="/dev/{{ vm.vm_volume_group | default(vm_volume_group) }}/vm-{{ vm.name }}"/>
+      <source dev="/dev/{{ vm.value.spec.vm_volume_group | default(vm_volume_group) }}/vm-{{ vm.key }}"/>
       <target dev="vda" bus="virtio"/>
       <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </disk>
     <disk type="file" device="cdrom">
-      <source file="/var/lib/libvirt/images/{{ vm.name }}_cloud-init.iso"/>
+      <source file="/var/lib/libvirt/images/{{ vm.key }}_cloud-init.iso"/>
       <target dev="sda" bus="sata"/>
       <readonly/>
     </disk>
@@ -50,9 +50,9 @@
         <lock posix='on' flock='on'/>
       </binary>
     </filesystem>
-{% for network in vm.networks %}
+{% for network in vm.value.networks %}
     <interface type="network">
-      <mac address="{{ vm_inventory[vm.name]['mac'][network] }}"/>
+      <mac address="{{ vm.value['mac'][network] }}"/>
       <source network="{{ network }}"/>
       <model type="virtio"/>
     </interface>
@@ -106,13 +106,13 @@
       <model type="cirrus" vram="16384" heads="1" primary="yes"/>
       <address type="pci" domain="0x0000" bus="0x09" slot="0x01" function="0x0"/>
     </video>
-{% if vm.pci_host_device is defined %}
+{% if vm.value.spec.pci_host_device is defined %}
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
-        <{{ vm.pci_host_device }}/>
+        <{{ vm.value.spec.pci_host_device }}/>
       </source>
     </hostdev>
 {% endif %}
   </devices>
 </domain>
-<!-- serial: {{ vm.serial|default("1") }} -->
+<!-- serial: {{ vm.value.spec.serial|default("1") }} -->

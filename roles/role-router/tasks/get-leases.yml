@@ -25,7 +25,8 @@
   when:
     - group is defined
     - groups[group] is defined
-    - hostvars[item].local_ssh_access | default(false) | bool is false
+    - hostvars[item].static_ip is not defined
+    - hostvars[item].mac is defined
 
 - name: List of 'host,mac' items desired based on reservations
   set_fact:
@@ -48,6 +49,7 @@
     - group is defined
     - groups[group] is defined
     - hostvars[item].eip is defined
+    - hostvars[item].mac is defined
 
 - name: Import leases desired from stored leases
   set_fact:

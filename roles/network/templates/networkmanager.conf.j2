@@ -3,4 +3,4 @@
 dns=none
 systemd-resolved=false
 rc-manager=unmanaged
-no-auto-default=eth0,{{ inside_nic }},{{ outside_nic }}
+no-auto-default={{ network.no_auto_default | join(',') }}

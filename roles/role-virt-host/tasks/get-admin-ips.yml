@@ -11,20 +11,20 @@
       register: vm_admin_network_status_json
 
     - debug:
-        msg: "VM: {{ vm_inventory[item.name] }}"
+        msg: "VM: {{ vm.key }}"
     - debug:
         msg: "Found IP for MAC: {{ ip }}"
       vars:
-        mac: "{{ vm_inventory[item.name].mac[vm_admin_network_name] }}"
+        mac: "{{ vm.value.mac[vm_admin_network_name] }}"
         query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
         json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
         ip: "{{ json | json_query(query) }}"
 
     - name: Store IP
       set_fact:
-        vm_inventory: "{{ vm_inventory | combine({item.name: {'address': ip } | combine(vm_inventory[item.name]) }) }}"
+        vm_inventory: "{{ vm_inventory | combine({vm.key: {'address': ip } | combine(vm.value) }) }}"
       vars:
-        mac: "{{ vm_inventory[item.name].mac[vm_admin_network_name] }}"
+        mac: "{{ vm.value.mac[vm_admin_network_name] }}"
         query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
         json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
         ip: "{{ json | json_query(query) | first }}"

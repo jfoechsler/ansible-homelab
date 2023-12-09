@@ -5,7 +5,7 @@
 
 # Old school hosts file sync for private VMs
 {% for host in groups.vms %}
-{% if hostvars[host].local_ssh_access | bool and hostvars[host].admin_ip != '' %}
+{% if hostvars[host].admin_ip != '' %}
 {{ hostvars[host].admin_ip }} {{ hostvars[host].dns_host }} {{ hostvars[host].dns_host }}.{{ domain }}
 {% endif %}
 {% endfor %}

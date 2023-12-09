@@ -10,9 +10,12 @@ interface-name={{ item.interface_name }}
 [ethernet]
 
 [ipv4]
-{% if item.ipv4.address1 is defined %}
-address1={{ item.ipv4.address1 }}
+{% if item.ipv4.static_ip | default(false) | bool %}
+address1={{ static_ip }}
 method=manual
+{% if item.ipv4.gateway is defined %}
+gateway={{ item.ipv4.gateway }}
+{% endif %}
 {% else %}
 method=auto
 {% endif %}

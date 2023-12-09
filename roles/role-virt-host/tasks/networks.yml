@@ -10,7 +10,6 @@
     name: "{{ vm_network_bridge_name }}"
     xml: "{{ lookup('template', 'network-bridge.xml.j2') }}"
   when:
-    - vm_network_bridge_name is defined
     - network_bridge_name is defined
     - vm_network_bridge_name not in list_nets
 

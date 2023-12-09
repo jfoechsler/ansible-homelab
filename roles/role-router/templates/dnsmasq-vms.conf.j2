@@ -2,6 +2,12 @@
 
 {% for dhcp_host in leases.vms %}
 {% if hostvars[(dhcp_host.name | split(','))[0]] is defined %}
-dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].ansible_host }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
+dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].dns_host }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
+{% endif %}
+{% endfor %}
+
+{% for host in groups.vms %}
+{% if hostvars[host].static_ip is defined %}
+address=/{{ hostvars[host].dns_host }}.{{ domain }}/{{ hostvars[host].static_ip.split('/')[0] }}
 {% endif %}
 {% endfor %}
