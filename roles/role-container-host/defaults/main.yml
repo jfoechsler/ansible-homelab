@@ -8,3 +8,4 @@ volumes_list: {}
 ports_list: {}
 containers_dir: "/var/local/ansible-containers"
 containers_restart: []
+vmfs_path: /mnt/vmfs

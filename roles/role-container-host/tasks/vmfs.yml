@@ -1,24 +1,33 @@
-- file:
-    path: "{{ vmfs_path }}"
+- name: VMFS directories
+  file:
+    path: "{{ vmfs_path }}/{{ item }}"
     state: directory
+  with_items: "{{ vmfs }}"
 
 - name: mount vmfs volume
   mount:
-    name: "{{ vmfs_path }}"
-    src: vmfs
+    name: "{{ vmfs_path }}/{{ item }}"
+    src: "{{ item }}"
     state: mounted
     fstype: "virtiofs"
+    opts: 'defaults'
+  with_items: "{{ vmfs }}"
 
 - name: Generate volumes list
   set_fact:
     volumes_list: "{{ volumes_list | combine({item.0.name: volumes_list[item.0.name] | default([]) + [vmfs_path + '/' + item.1.name + ':' + item.1.path + ':z'] }) }}"
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
-  when: item.1.type == "vmfs"
+  when:
+    - item.1.type == "vmfs"
+    - item.1.name is in vmfs
 
-- name: VMFS mount directories
+- name: VMFS directories ownership
   file:
     path: "{{ vmfs_path }}/{{ item.1.name }}"
-    owner: "{{ item.0.user if item.0.user is defined else omit }}"
+    owner: "{{ item.0.user }}"
     state: directory
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
-  when: item.1.type == "vmfs"
+  when:
+    - item.1.type == "vmfs"
+    - item.0.user is defined
+    - item.1.name is in vmfs

@@ -6,6 +6,7 @@ vm_images: "{{ data0_path }}/share/Linux-images"
 create_vms: []
 updated_vms: []
 vmfs_current: []
+vmfs_shares: {}
 vmfs_desired: []
 vm_inventory: {}
 vm_mounts_current: []

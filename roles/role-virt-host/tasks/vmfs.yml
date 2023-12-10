@@ -1,6 +1,8 @@
 - file:
-    path: "{{ vm_data_path }}/vmfs"
+    path: "{{ vm_data_path }}/vmfs/{{ item.key }}"
     state: directory
+  with_dict: "{{ vmfs_shares }}"
+  when: item.value.host == inventory_hostname
 
 # Moved to vm template
 #- include_tasks: get-vmfs.yml
