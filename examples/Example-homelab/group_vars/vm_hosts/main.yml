@@ -1,5 +1,0 @@
-# workaround for power button to shut down machine
-#chassis: vm
-vm_networks:
-  - name: host-bridge
-vm_images: "{{ data0_path }}/share/Linux-images"

@@ -1,4 +1,0 @@
-- hosts: fileservers
-  become: True
-  roles:
-    - fileserver

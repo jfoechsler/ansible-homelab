@@ -1,2 +1,1 @@
 ansible_user: fedora
-vmfs_path: /mnt/vmfs

@@ -1,8 +1,0 @@
-smb_workgroup: WORKGROUP
-#ssh_public_key: "ssh-rsa AA.."
-prefix_24: "192.168.2"
-wlan_prefix_24: "192.168.3"
-domain: "home.example.com"
-owner: "myuser"
-data_vg: data_vg
-data0_path: /mnt/data0

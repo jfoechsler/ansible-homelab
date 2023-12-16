@@ -1,4 +1,0 @@
-- hosts: routers
-  become: True
-  roles:
-    - router

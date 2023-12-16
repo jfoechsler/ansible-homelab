@@ -1,7 +1,0 @@
-- hosts: servers
-  become: True
-  roles:
-    - base
-    - lvm
-    - libvirtd
-    - syncthing
