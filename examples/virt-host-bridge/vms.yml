@@ -1,0 +1,20 @@
+# Perform VM hosts setup
+- hosts: vm_hosts
+  become: True
+  roles:
+    - base
+    - libvirtd
+    - role-virt-host
+
+- hosts: running_vms
+  become: True
+  gather_facts: no
+  pre_tasks:
+    - name: wait for server to come online
+      become: false
+      wait_for_connection:
+        timeout: 300
+    - name: Gathering facts
+      setup:
+  roles:
+    - base

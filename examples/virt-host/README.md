@@ -53,6 +53,7 @@ sudo dnf -y install \
 ```
 * Adjust group vars with your personal information.
 * Adjust inventory with host details.
+* Download Fedora cloud raw image to /mnt/data0/share/Linux-images/
 
 ## Set up server and VM
 ```
