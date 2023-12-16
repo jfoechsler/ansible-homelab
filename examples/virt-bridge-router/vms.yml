@@ -1,0 +1,34 @@
+# Fetch VM inventory and VMs to be created.
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+# Update Dnsmasq from inventory for DHCP
+- hosts: routers
+  become: True
+  tasks:
+    - include_role:
+        name: role-router
+        tasks_from: vm-reservations
+
+# Perform VM setup
+- hosts: vm_hosts
+  become: True
+  roles:
+    - role-virt-host
+
+- hosts: running_vms
+  become: True
+  gather_facts: no
+  pre_tasks:
+    - name: wait for server to come online
+      become: false
+      wait_for_connection:
+        timeout: 300
+    - name: Gathering facts
+      setup:
+  roles:
+    - base

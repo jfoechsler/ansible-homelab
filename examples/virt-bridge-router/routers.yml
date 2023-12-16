@@ -1,0 +1,12 @@
+# Perform VM hosts setup
+- hosts: vm_hosts
+  become: True
+  roles:
+    - base
+    - libvirtd
+    - role-virt-host
+
+- hosts: routers
+  become: True
+  roles:
+    - role-router

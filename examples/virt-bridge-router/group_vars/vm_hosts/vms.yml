@@ -4,11 +4,17 @@ vm_image:
 # States:
 # created, running, shutdown, destroyed
 vms:
-  - name: test-1
+  - name: router-1
+    # Set hostname from user-data instead of dhcp
+    static_hostname: true
+    # Set static IP
+    static_ip: 192.168.0.2/24
+    inventory_groups:
+      - vm_routers
     state: running
     image: f39
     host: myserver
     disk: 10
     admin_network: true
     bridge_network: true
-    delete_on_termination: true
+    delete_on_termination: false

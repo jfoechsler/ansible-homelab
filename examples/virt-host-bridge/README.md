@@ -1,6 +1,6 @@
 # ansible-homelab virt-host-bridge example
 
-* Extends virt-host example.
+* Based on virt-host example.
 * VM will be on the local network via bridge interface.
 
 **group_vars/vm_hosts/main.yml**
@@ -24,7 +24,6 @@ nmcli con down <your interface>
 nmcli con up bridge-br0
 nmcli con up bridge-slave-<your interface>
 ```
-* Adjust group vars with your personal information.
 
 ## Set up server and VM
 ```

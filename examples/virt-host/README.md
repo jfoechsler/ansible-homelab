@@ -3,7 +3,7 @@
 * Server setup with libvirt KVM and a test VM using LVM for disk.
 * VM will be on the local default network only.
 * An entry will be added the servers hosts file for convenience. 
-* This will overwrite contents on host file with templated one  
+* This will overwrite contents in host file with templated one  
 
 **group_vars/all/main.yml**
 ```yaml
