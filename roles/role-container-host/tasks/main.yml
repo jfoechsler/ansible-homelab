@@ -1,3 +1,6 @@
+- debug:
+    msg: "IPs: {{ ansible_all_ipv4_addresses }}"
+
 - name: Install packages
   dnf:
     name: "

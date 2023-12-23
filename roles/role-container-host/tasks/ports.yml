@@ -1,6 +1,6 @@
 
 - name: Generate port list
   set_fact:
-    ports_list: "{{ ports_list | combine({item.0.name: ports_list[item.0.name] | default([]) + [ansible_default_ipv4.address + ':' + item.1] }) }}"
+    ports_list: "{{ ports_list | combine({item.0.name: ports_list[item.0.name] | default([]) + [ansible_all_ipv4_addresses[0] + ':' + item.1] }) }}"
   loop: "{{ ctr_dict | subelements('ports', skip_missing=True) }}"
 
