@@ -15,19 +15,22 @@
 
 - name: Generate volumes list
   set_fact:
-    volumes_list: "{{ volumes_list | combine({item.0.name: volumes_list[item.0.name] | default([]) + [vmfs_path + '/' + item.1.name + ':' + item.1.path + ':z'] }) }}"
+    volumes_list: "{{ volumes_list | combine({item.0.name: volumes_list[item.0.name] | default([]) + [mount_path + ':' + item.1.path + ':z'] }) }}"
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
+  vars:
+    mount_path: "{{ [vmfs_path, item.1.name, item.1.subdir|default('')] | join('/') }}"
   when:
     - item.1.type == "vmfs"
     - item.1.name is in vmfs
 
-- name: VMFS directories ownership
+- name: container VMFS directories
   file:
-    path: "{{ vmfs_path }}/{{ item.1.name }}"
-    owner: "{{ item.0.user }}"
+    path: "{{ mount_path }}"
+    owner: "{{ item.0.user if item.0.user is defined else omit }}"
     state: directory
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
+  vars:
+    mount_path: "{{ [vmfs_path, item.1.name, item.1.subdir|default('')] | join('/') }}"
   when:
     - item.1.type == "vmfs"
-    - item.0.user is defined
     - item.1.name is in vmfs
