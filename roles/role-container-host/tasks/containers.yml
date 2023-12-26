@@ -22,7 +22,8 @@
     state: "{{ item.value.state }}"
     recreate: no
     ipc: shareable
-    ports: "{{ ports_list[item.value.name] if ports_list[item.value.name] is defined else omit }}"
+#    ports: "{{ ports_list[item.value.name] if ports_list[item.value.name] is defined else omit }}"
+    ports: "{{ item.value.ports if item.value.ports is defined else omit }}"
     env: "{{ item.value.environment | default(defaults.env) }}"
     volume: "{{ volumes_list[item.value.name] if volumes_list[item.value.name] is defined else omit }}"
     mount: "{{ item.value.mount if item.value.mount is defined else omit }}"
