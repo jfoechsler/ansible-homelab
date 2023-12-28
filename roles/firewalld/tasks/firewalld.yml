@@ -26,7 +26,7 @@
 
 - name: Enable zone
   firewalld:
-    interface: "{{ item.interface }}"
+    interface: "{{ item.interface if item.interface is defined else omit }}"
     zone: "{{ item.name }}"
     state: enabled
     permanent: true

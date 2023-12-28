@@ -51,7 +51,7 @@
     dest: "/etc/yum.repos.d/fedora.repo"
     section: "fedora"
     option: "enabled"
-    value: "{{ use_dnf_staging_repo | ternary('0', '1') }}"
+    value: "{{ use_dnf_staging | ternary('0', '1') }}"
     no_extra_spaces: true
 
 - name: Toggle fedora updates repo
@@ -59,8 +59,14 @@
     dest: "/etc/yum.repos.d/fedora-updates.repo"
     section: "updates"
     option: "enabled"
-    value: "{{ use_dnf_staging_repo | ternary('0', '1') }}"
+    value: "{{ use_dnf_staging | ternary('0', '1') }}"
     no_extra_spaces: true
+
+- name: Enable local repositories
+  template:
+    src: "{{ dnf_repositories[item].template }}"
+    dest: /etc/yum.repos.d/{{ dnf_repositories[item].name }}.repo
+  with_items: "{{ dnf_repositories_enabled }}"
 
 - name: Inotify watches increase
   sysctl:
@@ -79,8 +85,8 @@
     dest: /etc/machine-info
   when: chassis is defined
 
-- debug:
-    msg: "{{ ansible_devices }}"
+#- debug:
+#    msg: "{{ ansible_devices }}"
 
 - name: sudo admin
   template:
