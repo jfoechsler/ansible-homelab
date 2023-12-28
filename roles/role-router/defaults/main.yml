@@ -1,6 +1,6 @@
 default_features:
   dhcpd:
-    enabled: true
+    enabled: false
     # provide router address to clients instead of own address
     #router: 192.168.0.1
   dns:

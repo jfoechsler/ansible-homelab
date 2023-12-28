@@ -1,10 +1,66 @@
-- name: Enable testing repo
+# Mount VMFS in base role to be available for dnf repo
+- name: VMFS directories
+  file:
+    path: "{{ vmfs_path }}/{{ item }}"
+    state: directory
+  with_items: "{{ vmfs }}"
+  when:
+    - vmfs is defined
+    - vmfs_path is defined
+
+- name: mount vmfs volume
+  mount:
+    name: "{{ vmfs_path }}/{{ item }}"
+    src: "{{ item }}"
+    state: mounted
+    fstype: "virtiofs"
+    opts: 'defaults'
+  with_items: "{{ vmfs }}"
+  when:
+    - vmfs is defined
+    - vmfs_path is defined
+
+- name: Toggle testing repo
   ini_file:
     dest: "/etc/yum.repos.d/fedora-updates-testing.repo"
     section: "updates-testing"
     option: "enabled"
+    value: "{{ updates_testing_enabled | ternary('1', '0') }}"
+    no_extra_spaces: true
+
+- name: Cache packages
+  ini_file:
+    dest: "/etc/yum.repos.d/fedora.repo"
+    section: "fedora"
+    option: "keepcache"
     value: "1"
-  when: updates_testing_enabled
+    no_extra_spaces: true
+  when: dnf_keepcache_enabled
+
+- name: Cache updates
+  ini_file:
+    dest: "/etc/yum.repos.d/fedora-updates.repo"
+    section: "updates"
+    option: "keepcache"
+    value: "1"
+    no_extra_spaces: true
+  when: dnf_keepcache_enabled
+
+- name: Toggle fedora repo
+  ini_file:
+    dest: "/etc/yum.repos.d/fedora.repo"
+    section: "fedora"
+    option: "enabled"
+    value: "{{ use_dnf_staging_repo | ternary('0', '1') }}"
+    no_extra_spaces: true
+
+- name: Toggle fedora updates repo
+  ini_file:
+    dest: "/etc/yum.repos.d/fedora-updates.repo"
+    section: "updates"
+    option: "enabled"
+    value: "{{ use_dnf_staging_repo | ternary('0', '1') }}"
+    no_extra_spaces: true
 
 - name: Inotify watches increase
   sysctl:

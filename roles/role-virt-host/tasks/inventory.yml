@@ -52,7 +52,17 @@
   with_dict: "{{ vmfs_shares }}"
   loop_control:
     loop_var: vmfs
-  when: vm_inventory[vmfs.value.vm] is defined
+  when:
+    - vmfs.value.vm is defined
+    - vm_inventory[vmfs.value.vm] is defined
+
+- name: Inventory multi VM vmfs
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({ item.1: { 'vmfs': [item.0.key] + vm_inventory[item.1].vmfs } }, recursive=True) }}"
+  loop: "{{ vmfs_shares | dict2items | subelements('value.vms', skip_missing=True) }}"
+  when:
+    - item.0.value.vms is defined
+    - vm_inventory[item.1] is defined
 
 - name: Dump VM XML
   command: /usr/bin/virsh dumpxml {{ vm.value.spec.name }}
