@@ -46,21 +46,31 @@
     no_extra_spaces: true
   when: dnf_keepcache_enabled
 
-- name: Toggle fedora repo
+- name: Configure fedora repo
   ini_file:
     dest: "/etc/yum.repos.d/fedora.repo"
     section: "fedora"
-    option: "enabled"
-    value: "{{ use_dnf_staging | ternary('0', '1') }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
     no_extra_spaces: true
+  with_items:
+    - option: "enabled"
+      value: "1"
+    - option: "deltarpm"
+      value: "{{ dnf_keepcache_enabled | ternary('0', '1') }}"
 
-- name: Toggle fedora updates repo
+- name: Configure fedora updates repo
   ini_file:
     dest: "/etc/yum.repos.d/fedora-updates.repo"
     section: "updates"
-    option: "enabled"
-    value: "{{ use_dnf_staging | ternary('0', '1') }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
     no_extra_spaces: true
+  with_items:
+    - option: "enabled"
+      value: "{{ use_dnf_staging | ternary('0', '1') }}"
+    - option: "deltarpm"
+      value: "{{ dnf_keepcache_enabled | ternary('0', '1') }}"
 
 - name: Enable local repositories
   template:
