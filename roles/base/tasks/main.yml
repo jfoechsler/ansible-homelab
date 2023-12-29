@@ -72,11 +72,21 @@
     - option: "deltarpm"
       value: "{{ dnf_keepcache_enabled | ternary('0', '1') }}"
 
-- name: Enable local repositories
+- name: Create local repositories
   template:
     src: "{{ dnf_repositories[item].template }}"
     dest: /etc/yum.repos.d/{{ dnf_repositories[item].name }}.repo
-  with_items: "{{ dnf_repositories_enabled }}"
+  with_items: "{{ dnf_repositories_create }}"
+
+- name: Toggle local repositories
+  ini_file:
+    dest: "/etc/yum.repos.d/{{ item.name }}.repo"
+    section: "{{ item.section }}"
+    option: "enabled"
+    value: "{{ item.enabled }}"
+    no_extra_spaces: true
+    create: false
+  with_items: "{{ dnf_repositories_toggle }}"
 
 - name: Inotify watches increase
   sysctl:
