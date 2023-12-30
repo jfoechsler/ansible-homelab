@@ -3,6 +3,32 @@
     name: https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm
     state: present
 
+- name: Configure rpmfusion repositories
+  ini_file:
+    dest: "/etc/yum.repos.d/{{ item.0.name }}.repo"
+    section: "{{ item.0.section }}"
+    option: "{{ item.1.option }}"
+    value: "{{ item.1.value }}"
+    no_extra_spaces: true
+    create: false
+  with_nested:
+    - [
+      {name: rpmfusion-free, section: rpmfusion-free},
+      {name: rpmfusion-free-updates, section: rpmfusion-free-updates}
+    ]
+    - [
+      {option: "enabled", value: "1"},
+      {option: "excludepkgs", value: "{{ use_dnf_staging | ternary('*', '') }}"},
+    ]
+
+# is ffmpeg-free installed?
+- package_facts:
+    manager: rpm
+
+# rpmfusion multimedia group will pull in ffmpeg
+- shell: dnf -y swap ffmpeg-free ffmpeg --allowerasing
+  when: "'ffmpeg-free' in ansible_facts.packages"
+
 - name: Install packages
   dnf:
     name: "
@@ -19,6 +45,7 @@
       webp-pixbuf-loader,
       @multimedia,
       @workstation-product-environment,
-      podman
+      podman,
+      gstreamer1-plugin-openh264
       "
-    state: latest
+    state: present

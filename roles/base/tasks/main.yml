@@ -27,66 +27,40 @@
     option: "enabled"
     value: "{{ updates_testing_enabled | ternary('1', '0') }}"
     no_extra_spaces: true
+    create: false
 
-- name: Cache packages
+- name: Toggle repo cache
   ini_file:
-    dest: "/etc/yum.repos.d/fedora.repo"
-    section: "fedora"
+    dest: "/etc/dnf/dnf.conf"
+    section: "main"
     option: "keepcache"
-    value: "1"
+    value: "{{ dnf_keepcache_enabled | ternary('1', '0') }}"
     no_extra_spaces: true
-  when: dnf_keepcache_enabled
+    create: false
 
-- name: Cache updates
+- name: Configure fedora repositories
   ini_file:
-    dest: "/etc/yum.repos.d/fedora-updates.repo"
-    section: "updates"
-    option: "keepcache"
-    value: "1"
+    dest: "/etc/yum.repos.d/{{ item.0.name }}.repo"
+    section: "{{ item.0.section }}"
+    option: "{{ item.1.option }}"
+    value: "{{ item.1.value }}"
     no_extra_spaces: true
-  when: dnf_keepcache_enabled
-
-- name: Configure fedora repo
-  ini_file:
-    dest: "/etc/yum.repos.d/fedora.repo"
-    section: "fedora"
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-    no_extra_spaces: true
-  with_items:
-    - option: "enabled"
-      value: "1"
-    - option: "deltarpm"
-      value: "{{ dnf_keepcache_enabled | ternary('0', '1') }}"
-
-- name: Configure fedora updates repo
-  ini_file:
-    dest: "/etc/yum.repos.d/fedora-updates.repo"
-    section: "updates"
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-    no_extra_spaces: true
-  with_items:
-    - option: "enabled"
-      value: "{{ use_dnf_staging | ternary('0', '1') }}"
-    - option: "deltarpm"
-      value: "{{ dnf_keepcache_enabled | ternary('0', '1') }}"
+    create: false
+  with_nested:
+    - [
+      {name: fedora, section: fedora},
+      {name: fedora-updates, section: updates}
+    ]
+    - [
+      {option: "enabled", value: "1"},
+      {option: "excludepkgs", value: "{{ use_dnf_staging | ternary('*', '') }}"},
+    ]
 
 - name: Create local repositories
   template:
     src: "{{ dnf_repositories[item].template }}"
     dest: /etc/yum.repos.d/{{ dnf_repositories[item].name }}.repo
   with_items: "{{ dnf_repositories_create }}"
-
-- name: Toggle local repositories
-  ini_file:
-    dest: "/etc/yum.repos.d/{{ item.name }}.repo"
-    section: "{{ item.section }}"
-    option: "enabled"
-    value: "{{ item.enabled }}"
-    no_extra_spaces: true
-    create: false
-  with_items: "{{ dnf_repositories_toggle }}"
 
 - name: Inotify watches increase
   sysctl:
