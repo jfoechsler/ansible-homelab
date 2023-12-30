@@ -3,7 +3,7 @@
     name: "
       syncthing
       "
-    state: latest
+    state: present
 
 - name: syncthing service
   systemd:
