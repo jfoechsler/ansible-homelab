@@ -47,7 +47,7 @@
       <source dir='{{ vm_data_path }}/vmfs/{{ vmfs }}'/>
       <target dir='{{ vmfs }}'/>
       <binary path='/usr/libexec/virtiofsd' xattr='on'>
-        <cache mode='always'/>
+        <cache mode='none'/>
       </binary>
     </filesystem>
 {% endfor %}
