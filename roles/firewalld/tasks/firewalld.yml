@@ -55,22 +55,24 @@
 
 - name: Allow services in firewall
   firewalld:
-    service: "{{ item.1 }}"
+    service: "{{ item.1 if item.1 | split('/') | length == 1  else omit }}"
     state: enabled
     zone: "{{ item.0.name }}"
     permanent: true
     immediate: true
+    port: "{{ item.1 if item.1 | split('/') | length > 1  else omit }}"
   with_subelements:
     - "{{ firewalld.zones | default([]) }}"
     - service_allow
 
 - name: Remove services in firewall
   firewalld:
-    service: "{{ item.1 }}"
+    service: "{{ item.1 if item.1 | split('/') | length == 1  else omit }}"
     state: disabled
     zone: "{{ item.0.name }}"
     permanent: true
     immediate: true
+    port: "{{ item.1 if item.1 | split('/') | length > 1  else omit }}"
   with_subelements:
     - "{{ firewalld.zones | default([]) }}"
     - service_remove
