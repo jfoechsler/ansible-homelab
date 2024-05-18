@@ -11,7 +11,7 @@ default_features:
       - '1.1.1.1'
       - '8.8.8.8'
 
-lease_dir: "/var/local/ansible-dnsmasq"
+leases_dir: "/var/local/ansible-dnsmasq"
 dnsmasq_state_needed: started
 leases: {}
 lan_ip_start: 5

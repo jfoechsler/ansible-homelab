@@ -6,11 +6,11 @@
 
 - name: leases directory
   file:
-    path: "{{ lease_dir }}/{{ reservations | default(group) }}"
+    path: "{{ leases_dir }}/{{ reservations | default(group) }}"
     state: directory
 
 - find:
-    paths: "{{ lease_dir }}/{{ reservations | default(group) }}"
+    paths: "{{ leases_dir }}/{{ reservations | default(group) }}"
   register: lease_files
 
 - slurp:
@@ -80,14 +80,14 @@
 
 - name: Delete lease files not in desired list
   file:
-    path: "{{ lease_dir }}/{{ reservations | default(group) }}/{{ item.name }}"
+    path: "{{ leases_dir }}/{{ reservations | default(group) }}/{{ item.name }}"
     state: absent
   loop: "{{ stored_group_leases }}"
   when: item.name is not in dhcp_hosts
 
 - name: Write lease files
   copy:
-    dest: "{{ lease_dir }}/{{ reservations | default(group) }}/{{ item.name }}"
+    dest: "{{ leases_dir }}/{{ reservations | default(group) }}/{{ item.name }}"
     content: "{{ item.value }}"
   loop: "{{ group_leases }}"
 
