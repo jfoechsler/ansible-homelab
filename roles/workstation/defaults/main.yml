@@ -1,0 +1,4 @@
+use_dnf_staging: false
+workstation_packages: [
+  '@workstation-product-environment'
+]

@@ -1,3 +1,7 @@
+- rpm_key:
+    state: present
+    key: /usr/share/distribution-gpg-keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-{{ ansible_distribution_major_version }}
+
 - name: RPMfusion
   dnf:
     name: https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm
@@ -35,22 +39,5 @@
 
 - name: Install packages
   dnf:
-    name: "
-      gnome-tweak-tool,
-      vim,
-      gnome-shell-extension-dash-to-dock,
-      cascadia-code-fonts,
-      podman-docker,
-      mariadb,
-      thunderbird,
-      virt-manager,
-      libvirt-client,
-      virt-install,
-      webp-pixbuf-loader,
-      @multimedia,
-      @workstation-product-environment,
-      podman,
-      gstreamer1-plugin-openh264,
-      tmux
-      "
+    name: "{{ workstation_packages | join(',') }}"
     state: present
