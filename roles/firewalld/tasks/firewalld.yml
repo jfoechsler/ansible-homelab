@@ -22,7 +22,7 @@
 
 - name: Reload firewall to add zone
   command: firewall-cmd --reload
-  when: lookup('ansible.utils.index_of', zone_create.results, 'eq', true, 'changed') | length > 0
+  when: query('ansible.utils.index_of', zone_create.results, 'eq', true, 'changed') | length > 0
 
 - name: Enable zone
   firewalld:

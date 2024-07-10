@@ -40,9 +40,18 @@
   with_dict: "{{ ctr_dict }}"
   register: ctr_state
 
-- name: Dont restart changed container
+- name: systemd reload
+  command: systemctl daemon-reload
+  when: query('ansible.utils.index_of', ctr_state.results, 'eq', true, 'changed') | length > 0
+
+- name: Set of containers with updated image not restarted by podman_container
   set_fact:
     containers_restart: "{{ containers_restart | unique | difference([item.container.Name]) }}"
+  with_items: "{{ ctr_state.results }}"
+  when: item.changed
+
+- name: Wait on changed container
+  shell: sleep 15
   with_items: "{{ ctr_state.results }}"
   when: item.changed
 
