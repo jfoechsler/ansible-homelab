@@ -1,0 +1,7 @@
+
+- shell: dnf4 --disableexcludes=all list updates
+  changed_when: False
+  register: updates
+
+- debug:
+    msg: "{{ updates.stdout_lines }}"
