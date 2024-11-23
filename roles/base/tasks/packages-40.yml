@@ -1,0 +1,6 @@
+#- name: Install base packages
+#  dnf:
+#    name: "
+
+#      "
+#    state: present

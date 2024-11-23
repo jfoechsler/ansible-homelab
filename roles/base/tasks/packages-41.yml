@@ -1,0 +1,9 @@
+- name: Install base packages
+  dnf:
+    name: "
+      python3-libdnf5
+      "
+    state: present
+  module_defaults:
+    dnf:
+      use_backend: dnf4
