@@ -1,4 +1,5 @@
-dependencies:
-  - role: base
-  - role: network
-  - role: firewalld
+# Circular dependency when VM router needs changes before base role works
+#dependencies:
+#  - role: base
+#  - role: network
+#  - role: firewalld
