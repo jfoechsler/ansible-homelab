@@ -1,6 +1,9 @@
+- set_fact:
+    vm_template: "vm-template{{ (vm.value.spec.vm_type|default('') == 'efi') | ternary('-efi', '') }}.xml.j2"
+
 - name: Save XML definition
   template:
-    src: "vm-template.xml.j2"
+    src: "{{ vm_template }}"
     dest: "{{ vm_data_path }}/vmhost/{{ vm.key }}/dom.xml"
   register: saved_xml
 
@@ -35,7 +38,7 @@
 - name: Define a VM for update or creation
   virt:
     command: define
-    xml: "{{ lookup('template', 'vm-template.xml.j2') }}"
+    xml: "{{ lookup('template', vm_template ) }}"
   when:
     - saved_xml.changed
       or vm.key in create_vms | map(attribute='name')
