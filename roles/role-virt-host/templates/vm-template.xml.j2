@@ -42,7 +42,7 @@
       <readonly/>
     </disk>
 {% for vmfs in vm.value.vmfs %}
-     <filesystem type='mount' accessmode='passthrough'>
+    <filesystem type='mount' accessmode='passthrough'>
       <driver type='virtiofs' queue='1024'/>
       <source dir='{{ vm_data_path }}/vmfs/{{ vmfs }}'/>
       <target dir='{{ vmfs }}'/>
