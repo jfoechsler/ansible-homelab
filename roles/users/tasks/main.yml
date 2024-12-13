@@ -1,0 +1,36 @@
+- name: SSH key
+  authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ ssh_public_key }}"
+  when: ansible_user is defined
+
+- name: sudo admin
+  template:
+    src: sudo_admin.j2
+    dest: /etc/sudoers.d/ansible_admin
+  when: sudo_admin
+
+- name: Per-user group creation
+  group: name="{{item.username}}" gid="{{item.uid}}"
+  with_items: "{{users}}"
+  when: users_create_per_user_group
+
+- name: User creation
+  user: name="{{item.username}}"
+    group="{{item.username if users_create_per_user_group
+    else users_group}}"
+    groups="{{item.groups | join(',')}}"
+    shell={{item.shell if item.shell is defined else users_default_shell}}
+    password="{{item.password if item.password is defined else '!'}}"
+    comment="{{item.name}}"
+    uid="{{item.uid}}"
+    createhome="{{'yes' if users_create_homedirs else 'no'}}"
+    append="{{'yes' if user_group_append else 'no'}}"
+    home="{{ users_home }}/{{item.username}}"
+  with_items: "{{users}}"
+
+- name: SSH keys
+  authorized_key: user="{{item.0.username}}" key="{{item.1}}"
+  with_subelements:
+    - "{{users}}"
+    - ssh_key

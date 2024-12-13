@@ -1,0 +1,7 @@
+sudo_admin: false
+users_create_per_user_group: true
+users_group: users
+users_default_shell: /bin/bash
+users_create_homedirs: true
+user_group_append: true
+users_home: /home

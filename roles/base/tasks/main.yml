@@ -69,12 +69,6 @@
     name: fs.inotify.max_user_watches
     value: "204800"
 
-- name: SSH key
-  authorized_key:
-    user: "{{ ansible_user }}"
-    key: "{{ ssh_public_key }}"
-  when: ansible_user is defined
-
 - name: Machine info
   template:
     src: machine-info.j2
@@ -83,11 +77,5 @@
 
 #- debug:
 #    msg: "{{ ansible_devices }}"
-
-- name: sudo admin
-  template:
-    src: sudo_admin.j2
-    dest: /etc/sudoers.d/ansible_admin
-  when: sudo_admin
 
 - include_tasks: timedate.yml
