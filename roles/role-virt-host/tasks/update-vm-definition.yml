@@ -21,6 +21,8 @@
   virt:
     command: undefine
     name: "{{ vm.key }}"
+    flags:
+      - nvram
   register: updated_undefined
   when:
     - saved_xml.changed

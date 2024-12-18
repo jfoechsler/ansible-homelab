@@ -57,10 +57,10 @@
       </binary>
     </filesystem>
 {% endfor %}
-{% for network in vm.value.networks %}
+{% for network in vm.value.spec.network.connections %}
     <interface type="network">
-      <mac address="{{ vm.value['mac'][network] }}"/>
-      <source network="{{ network }}"/>
+      <mac address="{{ vm.value['mac'][network.vnet_name] }}"/>
+      <source network="{{ network.vnet_name }}"/>
       <model type="virtio"/>
     </interface>
 {% endfor %}
@@ -177,6 +177,13 @@
       <model type="virtio" heads="1" primary="yes"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x0"/>
     </video>
+{% if vm.value.spec.pci_host_device is defined %}
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <{{ vm.value.spec.pci_host_device }}/>
+      </source>
+    </hostdev>
+{% endif %}
     <redirdev bus="usb" type="spicevmc">
       <address type="usb" bus="0" port="2"/>
     </redirdev>

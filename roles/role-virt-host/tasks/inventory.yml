@@ -22,22 +22,6 @@
   when:
     - vm.host == inventory_hostname
 
-- name: Inventory VM admin network
-  set_fact:
-    vm_inventory: "{{ vm_inventory | combine({ vm.key: { 'networks': vm.value.networks + [vm_admin_network_name] } }, recursive=True) }}"
-  with_dict: "{{ vm_inventory }}"
-  loop_control:
-    loop_var: vm
-  when: vm.value.spec.admin_network | default(false) | bool
-
-- name: Inventory VM bridge network
-  set_fact:
-    vm_inventory: "{{ vm_inventory | combine({ vm.key: { 'networks': vm.value.networks + [vm_network_bridge_name] } }, recursive=True) }}"
-  with_dict: "{{ vm_inventory }}"
-  loop_control:
-    loop_var: vm
-  when: vm.value.spec.bridge_network | default(false) | bool
-
 - name: Inventory VM elastic IP
   set_fact:
     vm_inventory: "{{ vm_inventory | combine({ eip.value.vm: { 'eip': eip.key } }, recursive=True) }}"
@@ -100,12 +84,10 @@
 
 # Get IPs from admin NAT interface
 - include_tasks: get-admin-ips.yml
-  with_dict: "{{ vm_inventory }}"
-  loop_control:
-    loop_var: vm
+  loop: "{{ vm_inventory | dict2items | subelements('value.spec.network.connections', skip_missing=True) }}"
   when:
-    - vm.value.spec.admin_network | default(false) | bool
-    - vm.key in running_vms.list_vms
+    - item.0.key in running_vms.list_vms
+    - item.1.vnet_name == vm_admin_network_name
 
 - debug:
     msg: "VMs: {{ vm_inventory }}"
