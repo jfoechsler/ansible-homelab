@@ -51,10 +51,10 @@
       </binary>
     </filesystem>
 {% endfor %}
-{% for network in vm.value.networks %}
+{% for network in vm.value.spec.network.connections %}
     <interface type="network">
-      <mac address="{{ vm.value['mac'][network] }}"/>
-      <source network="{{ network }}"/>
+      <mac address="{{ vm.value['mac'][network.vnet_name] }}"/>
+      <source network="{{ network.vnet_name }}"/>
       <model type="virtio"/>
     </interface>
 {% endfor %}
