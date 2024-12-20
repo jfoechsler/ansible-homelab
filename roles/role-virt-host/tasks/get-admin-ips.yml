@@ -15,7 +15,7 @@
     - debug:
         msg: "Found IP for MAC: {{ ip }}"
       vars:
-        mac: "{{ item.0.value.mac[vm_admin_network_name] }}"
+        mac: "{{ item.1.macaddress }}"
         query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
         json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
         ip: "{{ json | json_query(query) }}"
@@ -24,7 +24,7 @@
       set_fact:
         vm_inventory: "{{ vm_inventory | combine({item.0.key: {'address': ip } | combine(item.0.value) }) }}"
       vars:
-        mac: "{{ item.0.value.mac[vm_admin_network_name] }}"
+        mac: "{{ item.1.macaddress }}"
         query: "[?\"mac-address\"=='{{ mac }}'].\"ip-address\""
         json: "{{ vm_admin_network_status_json.content | b64decode | from_json }}"
         ip: "{{ json | json_query(query) | first }}"

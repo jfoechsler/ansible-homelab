@@ -1,15 +1,15 @@
 - set_fact:
-    dom_macs: {}
+    dom_macs: []
 
-- name: Create new MAC address for DHCP reservation
+- name: Create new MAC address
   set_fact:
-    dom_macs: "{{ dom_macs | combine( { item.vnet_name: '52:54:00' | random_mac }) }}"
+    dom_macs: "{{ dom_macs  + ['52:54:00' | random_mac] }}"
   loop: "{{ vm.value.spec.network.connections }}"
   when: vm.key in create_vms | map(attribute='name')
 
 - name: Find existing MAC
   set_fact:
-    dom_macs: "{{ dom_macs | combine( { item.vnet_name: vars['dom_dict_' + vm.value.key].domain.devices.interface.mac['@address'] }) }}"
+    dom_macs: "{{ dom_macs + [vars['dom_dict_' + vm.value.key].domain.devices.interface.mac['@address']] }}"
   loop: "{{ vm.value.spec.network.connections }}"
   when:
     - vm.key in registered_vms.list_vms
@@ -17,7 +17,7 @@
 
 - name: Find existing MAC for list of networks
   set_fact:
-    dom_macs: "{{ dom_macs | combine( { item.vnet_name: vars['dom_dict_' + vm.value.key].domain.devices.interface[idx].mac['@address'] }) }}"
+    dom_macs: "{{ dom_macs + [vars['dom_dict_' + vm.value.key].domain.devices.interface[idx].mac['@address']] }}"
   loop: "{{ vm.value.spec.network.connections }}"
   loop_control:
     index_var: idx
@@ -25,6 +25,16 @@
     - vm.key in registered_vms.list_vms
     - vm.value.spec.network.connections | length > 1
 
+
 - set_fact:
-    vm_inventory: "{{ vm_inventory | combine({ vm.key: {'mac': dom_macs } | combine(vm_inventory[vm.key]) }) }}"
-  when: dom_macs != {}
+    vm_network_connections: []
+
+- name: Update vm connections
+  set_fact:
+    vm_network_connections: "{{ vm_network_connections + [item | combine({'macaddress': dom_macs[idx]})] }}"
+  loop: "{{ vm.value.spec.network.connections }}"
+  loop_control:
+    index_var: idx
+
+- set_fact:
+    vm_inventory: "{{ vm_inventory | combine({ vm.key: {'vm_network_connections': vm_network_connections } | combine(vm_inventory[vm.key]) }) }}"
