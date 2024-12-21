@@ -35,6 +35,7 @@
   loop: "{{ vm.value.spec.network.connections }}"
   loop_control:
     index_var: idx
+  when: dom_macs != []
 
 - set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'vm_network_connections': vm_network_connections } | combine(vm_inventory[vm.key]) }) }}"

@@ -25,6 +25,7 @@
   command: nmcli con delete "{{ item }}"
   loop: "{{ list_connections.stdout_lines }}"
   when:
+    - connections | length > 0
     - item != 'lo'
     - item is not in desired_connections
   register: delete_connections

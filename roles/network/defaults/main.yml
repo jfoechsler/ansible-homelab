@@ -1,4 +1,6 @@
 network_defaults:
   connections: []
+  # - id: internal
+#      macaddress:
   network_manager_resolved_disable: false
   reboot_enabled: false
