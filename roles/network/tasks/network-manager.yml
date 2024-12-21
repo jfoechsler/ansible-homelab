@@ -4,13 +4,7 @@
     # Not working for some reason
     #dest: /etc/NetworkManager/conf.d/ansible-network.conf
     dest: /etc/NetworkManager/NetworkManager.conf
-  register: nm_config
-
-- name: Network manager restart
-  systemd:
-    name: "NetworkManager"
-    state: "restarted"
-  when: nm_config.changed
+  notify: network manager restart
 
 - name: resolved service
   systemd:
@@ -34,6 +28,6 @@
   template:
     src: resolv.conf.j2
     dest: /etc/resolv.conf
-  when: network.dns_servers is defined
+  when: network_merged.dns_servers is defined
   vars:
-    dns_servers: "{{ network.dns_servers }}"
+    dns_servers: "{{ network_merged.dns_servers }}"

@@ -36,6 +36,9 @@
 - name: nmcli
   nmcli:
     conn_name: "{{ item.1.id }}"
+#    conn_reload: "{{ item.1.suppress_reload | default(false) | bool | ternary('false', 'true') }}"
+    # reload seems to mean from disk, not taking down connection
+    conn_reload: 'true'
     ifname: "{{ item.0 }}"
     type: ethernet
     ip4: "{{ item.1.static_ip if item.1.static_ip is defined else omit }}"
@@ -50,3 +53,21 @@
     - vars['ansible_' + item.0]['type'] == 'ether'
     - vars['ansible_' + item.0]['macaddress'] == item.1.macaddress
     - not item.1.skip_config | default(false) | bool
+  register: nmcli
+
+# Restart network manager, when nmcli changed
+- name: notify network manager
+  assert: { that: true, quiet: true }
+  changed_when: true
+  when:
+    - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length > 0
+  notify: network manager restart
+
+# Reboot node when nmcli changed and reboot is enabled
+- name: notify reboot
+  assert: { that: true, quiet: true }
+  changed_when: true
+  when:
+    - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length > 0
+    - network_merged.reboot_enabled | bool
+  notify: restart

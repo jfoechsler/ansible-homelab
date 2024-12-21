@@ -1,3 +1,4 @@
-network:
+network_defaults:
   connections: []
   network_manager_resolved_disable: false
+  reboot_enabled: false

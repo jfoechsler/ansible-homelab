@@ -1,6 +1,11 @@
+- include_vars: main.yml
+
 - include_tasks: network-connections.yml
   vars:
-    connections: "{{ vm_network_connections is defined | ternary(vm_network_connections, network.connections) }}"
+    connections: "{{ vm_network_connections is defined | ternary(vm_network_connections, network_merged.connections) }}"
 
 - include_tasks: network-manager.yml
-  when: network.network_manager_resolved_disable | bool
+  when: network_merged.network_manager_resolved_disable | bool
+
+- name: Flush handlers
+  meta: flush_handlers
