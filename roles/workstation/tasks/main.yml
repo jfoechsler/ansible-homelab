@@ -41,3 +41,9 @@
   dnf:
     name: "{{ workstation_packages | join(',') }}"
     state: present
+
+- name: Change default target to graphical.target
+  file:
+    src: /usr/lib/systemd/system/graphical.target
+    dest: /etc/systemd/system/default.target
+    state: link
