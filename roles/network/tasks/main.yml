@@ -1,2 +1,6 @@
-- include_tasks: network.yml
-  when: network is defined
+- include_tasks: network-connections.yml
+  vars:
+    connections: "{{ vm_network_connections is defined | ternary(vm_network_connections, network.connections) }}"
+
+- include_tasks: network-manager.yml
+  when: network.network_manager_resolved_disable | bool

@@ -1,7 +1,5 @@
 # {{ ansible_managed }}
-{% if network.dns_servers is defined %}
-{% for server in network.dns_servers %}
+{% for server in dns_servers %}
 nameserver {{ server }}
 {% endfor %}
-{% endif %}
 search {{ domain }}

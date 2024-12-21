@@ -1,31 +1,52 @@
-- name: Network connection files
-  template:
-    src: connection.nmconnection.j2
-    dest: "/etc/NetworkManager/system-connections/{{ item.file | default(item.id) }}.nmconnection"
-    mode: 0600
-  loop: "{{ network.connections }}"
-  register: connection
+- debug:
+    msg: "{{ vars['ansible_' + item] }}"
+  with_items:
+    - "{{ ansible_interfaces }}"
+  when:
+    - vars['ansible_' + item]['type'] == 'ether'
 
-- name: Reload network connection from disk
-  command: "nmcli conn reload '{{ item.item.id }}'"
-  loop: "{{ connection.results }}"
-  when: item.changed
-
-- name: network connection up
-  command: "nmcli conn up '{{ item.id }}'"
-  loop: "{{ network.connections }}"
+- name: list connections
+  command: nmcli --get-values name con show
+  register: list_connections
   changed_when: False
 
-- name: network connection down
-  command: "nmcli conn down '{{ item.item.id }}'"
-  loop: "{{ connection.results }}"
+- name: desired connections
+  set_fact:
+    desired_connections: "{{ desired_connections | default([]) + [item.1.id] }}"
+  with_nested:
+    - "{{ ansible_interfaces }}"
+    - "{{ connections }}"
   when:
-    - connection.changed
-    - not (item.item.suppress_reload | default(false) | bool)
+    - vars['ansible_' + item.0]['type'] == 'ether'
+    - vars['ansible_' + item.0]['macaddress'] == item.1.macaddress
+    - not item.1.skip_config | default(false) | bool
 
-- name: network connection up
-  command: "nmcli conn up '{{ item.item.id }}'"
-  loop: "{{ connection.results }}"
+- name: delete connections not in desired list
+  command: nmcli con delete "{{ item }}"
+  loop: "{{ list_connections.stdout_lines }}"
   when:
-    - connection.changed
-    - not (item.item.suppress_reload | default(false) | bool)
+    - item != 'lo'
+    - item is not in desired_connections
+  register: delete_connections
+
+- name: reload network connection from disk
+  command: "nmcli conn reload"
+  when: delete_connections.changed
+
+- name: nmcli
+  nmcli:
+    conn_name: "{{ item.1.id }}"
+    ifname: "{{ item.0 }}"
+    type: ethernet
+    ip4: "{{ item.1.static_ip if item.1.static_ip is defined else omit }}"
+    zone: "{{ item.1.zone if item.1.zone is defined else omit }}"
+    gw4: "{{ item.1.gateway if item.1.gateway is defined else omit }}"
+    gw4_ignore_auto: "{{ item.1.ignore_auto_routes if item.1.ignore_auto_routes is defined else omit }}"
+    state: present
+  with_nested:
+    - "{{ ansible_interfaces }}"
+    - "{{ connections }}"
+  when:
+    - vars['ansible_' + item.0]['type'] == 'ether'
+    - vars['ansible_' + item.0]['macaddress'] == item.1.macaddress
+    - not item.1.skip_config | default(false) | bool

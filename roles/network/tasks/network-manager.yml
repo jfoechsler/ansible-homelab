@@ -34,3 +34,6 @@
   template:
     src: resolv.conf.j2
     dest: /etc/resolv.conf
+  when: network.dns_servers is defined
+  vars:
+    dns_servers: "{{ network.dns_servers }}"
