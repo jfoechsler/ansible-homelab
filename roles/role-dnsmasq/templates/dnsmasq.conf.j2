@@ -22,8 +22,8 @@ server={{ server }}
 #no-resolv
 {% endif %}
 
-{% if router_features_merged.dhcpd.router is defined %}
-dhcp-option=option:router,{{ router_features_merged.dhcpd.router }}
+{% if router_features_merged.dhcpd.use_external_router is defined %}
+dhcp-option=option:router,{{ router_features_merged.dhcpd.use_external_router }}
 {% endif %}
 
 

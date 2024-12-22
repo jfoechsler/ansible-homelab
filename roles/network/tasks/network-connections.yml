@@ -10,17 +10,52 @@
   register: list_connections
   changed_when: False
 
-- name: desired connections
+- set_fact:
+    connection_facts: []
+- name: facts
   set_fact:
-    desired_connections: "{{ desired_connections | default([]) + [item.1.id] }}"
+    connection_facts: "{{ connection_facts + [{'interface':item.0,'config':item.1}] }}"
   with_nested:
     - "{{ ansible_interfaces }}"
     - "{{ connections }}"
   when:
     - vars['ansible_' + item.0]['type'] == 'ether'
     - vars['ansible_' + item.0]['macaddress'] == item.1.macaddress
-    - not item.1.skip_config | default(false) | bool
 
+- name: desired connections
+  set_fact:
+    desired_connections: "{{ desired_connections | default([]) + [item.config.id] }}"
+  with_items:
+    - "{{ connection_facts }}"
+  when:
+    - not item.config.skip_config | default(false) | bool
+
+# Maybe don't need this reload
+- name: reload network connection from disk
+  command: "nmcli conn reload"
+  changed_when: False
+#  when: delete_connections.changed
+
+- name: nmcli
+  nmcli:
+    conn_name: "{{ item.config.id }}"
+#    conn_reload: "{{ item.config.suppress_reload | default(false) | bool | ternary('false', 'true') }}"
+    # reload seems to mean from disk, not taking down connection
+    conn_reload: 'true'
+    ifname: "{{ item.interface }}"
+    type: ethernet
+    ip4: "{{ item.config.static_ip if item.config.static_ip is defined else omit }}"
+    zone: "{{ item.config.zone if item.config.zone is defined else omit }}"
+    gw4: "{{ item.config.gateway if item.config.gateway is defined else omit }}"
+    gw4_ignore_auto: "{{ item.config.ignore_auto_routes if item.config.ignore_auto_routes is defined else omit }}"
+    state: present
+  with_items:
+    - "{{ connection_facts }}"
+  when:
+    - not item.config.skip_config | default(false) | bool
+  register: nmcli
+
+# FIX: Solve the need for a second run to delete stale connections
 - name: delete connections not in desired list
   command: nmcli con delete "{{ item }}"
   loop: "{{ list_connections.stdout_lines }}"
@@ -28,33 +63,8 @@
     - connections | length > 0
     - item != 'lo'
     - item is not in desired_connections
-  register: delete_connections
-
-- name: reload network connection from disk
-  command: "nmcli conn reload"
-  when: delete_connections.changed
-
-- name: nmcli
-  nmcli:
-    conn_name: "{{ item.1.id }}"
-#    conn_reload: "{{ item.1.suppress_reload | default(false) | bool | ternary('false', 'true') }}"
-    # reload seems to mean from disk, not taking down connection
-    conn_reload: 'true'
-    ifname: "{{ item.0 }}"
-    type: ethernet
-    ip4: "{{ item.1.static_ip if item.1.static_ip is defined else omit }}"
-    zone: "{{ item.1.zone if item.1.zone is defined else omit }}"
-    gw4: "{{ item.1.gateway if item.1.gateway is defined else omit }}"
-    gw4_ignore_auto: "{{ item.1.ignore_auto_routes if item.1.ignore_auto_routes is defined else omit }}"
-    state: present
-  with_nested:
-    - "{{ ansible_interfaces }}"
-    - "{{ connections }}"
-  when:
-    - vars['ansible_' + item.0]['type'] == 'ether'
-    - vars['ansible_' + item.0]['macaddress'] == item.1.macaddress
-    - not item.1.skip_config | default(false) | bool
-  register: nmcli
+    - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length == 0
+#  register: delete_connections
 
 # Restart network manager, when nmcli changed
 - name: notify network manager

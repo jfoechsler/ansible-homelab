@@ -39,3 +39,11 @@
 
 - set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'vm_network_connections': vm_network_connections } | combine(vm_inventory[vm.key]) }) }}"
+
+# Limit to a single DHCP MAC
+- set_fact:
+    vm_inventory: "{{ vm_inventory | combine({ vm.key: {'dhcp_mac': item.macaddress } | combine(vm_inventory[vm.key]) }) }}"
+  loop: "{{ vm_network_connections }}"
+  when:
+    - dom_macs != []
+    - item.vnet_name == vm_network_bridge_name

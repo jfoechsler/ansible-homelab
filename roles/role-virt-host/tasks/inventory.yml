@@ -87,18 +87,19 @@
   loop: "{{ vm_inventory | dict2items | subelements('value.vm_network_connections', skip_missing=True) }}"
   when:
     - item.0.key in running_vms.list_vms
+    - item.0.value.spec.state == 'running'
     - item.1.vnet_name == vm_admin_network_name
 
 - debug:
     msg: "VMs: {{ vm_inventory }}"
 
 - add_host: hostname={{ vm.key }}
-    ansible_host={{ vm.value.address | default('vm-' + vm.key) }}
+    ansible_host={{ 'vm-' + vm.key }}
     dns_host={{ 'vm-' + vm.key }}
     admin_ip={{ vm.value.address | default('') }}
     groups={{ (['vms'] + (['running_vms'] + (vm.value.spec.inventory_groups | default([])) if vm.value.spec.state == 'running' else [])) | join(',') }}
+    dhcp_mac={{ vm.value.dhcp_mac if vm.value.dhcp_mac is defined else omit }}
     vm_network_connections={{ vm.value.vm_network_connections }}
-    static_ip={{ vm.value.spec.static_ip if vm.value.spec.static_ip is defined else omit }}
     eip={{ vm.value.eip if vm.value.eip is defined else omit }}
     eip_address={{ prefix_24 + '.' + vm.value.eip|string if vm.value.eip is defined else omit }}
     vmfs={{ vm.value.vmfs if vm.value.vmfs is defined else [] }}

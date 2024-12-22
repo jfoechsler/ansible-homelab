@@ -49,7 +49,9 @@
 - name: dnsmasq service state needed
   set_fact:
     dnsmasq_state_needed: restarted
-  when: dnsmasq_conf.changed
+  when:
+    - dnsmasq_enabled == 'yes'
+    - dnsmasq_conf.changed
       or dnsmasq_dhcpd_conf.changed
       or dnsmasq_dhcpd_disabled_conf.changed
       or hosts_conf.changed
@@ -58,8 +60,8 @@
 - name: dnsmasq service
   systemd:
     name: "dnsmasq"
-    state: "{{ dnsmasq_state_needed}}"
-    enabled: "yes"
+    state: "{{ dnsmasq_state_needed }}"
+    enabled: "{{ dnsmasq_enabled }}"
     daemon_reload: "yes"
 
 - name: dispatcher

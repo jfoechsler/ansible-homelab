@@ -2,7 +2,7 @@ default_features:
   dhcpd:
     enabled: false
     # provide router address to clients instead of own address
-    #router: 192.168.0.1
+    #use_external_router: 192.168.0.1
   dns:
     # upstream servers
     servers:
@@ -11,6 +11,7 @@ default_features:
 
 leases_dir: "/var/local/ansible-dnsmasq"
 dnsmasq_state_needed: started
+dnsmasq_enabled: 'yes'
 leases: {}
 lan_ip_start: 5
 lan_ip_end: 50

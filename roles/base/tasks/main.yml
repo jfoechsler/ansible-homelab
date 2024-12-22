@@ -1,5 +1,3 @@
-- include_tasks: "packages-{{ ansible_distribution_major_version }}.yml"
-
 # Mount VMFS in base role to be available for dnf repo
 - name: VMFS directories
   file:
@@ -79,3 +77,4 @@
 #    msg: "{{ ansible_devices }}"
 
 - include_tasks: timedate.yml
+- include_tasks: "packages-{{ ansible_distribution_major_version }}.yml"
