@@ -6,7 +6,7 @@
     - vars['ansible_' + item]['type'] == 'ether'
 
 - name: list connections
-  command: nmcli --get-values name con show
+  command: nmcli --get-values name con show --active
   register: list_connections
   changed_when: False
 
@@ -53,7 +53,17 @@
     - "{{ connection_facts }}"
   when:
     - not item.config.skip_config | default(false) | bool
+    - not item.config.state | default('') == 'disabled'
   register: nmcli
+
+- name: connection disable
+  command: nmcli con modify {{ item.config.id }} autoconnect no
+  with_items:
+    - "{{ connection_facts }}"
+  when:
+    - item.config.state | default('') == 'disabled'
+    - item.config.id in list_connections.stdout_lines
+  register: nmcli_disable
 
 # FIX: Solve the need for a second run to delete stale connections
 - name: delete connections not in desired list
@@ -72,6 +82,7 @@
   changed_when: true
   when:
     - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length > 0
+      or nmcli_disable.changed
   notify: network manager restart
 
 # Reboot node when nmcli changed and reboot is enabled
@@ -80,5 +91,6 @@
   changed_when: true
   when:
     - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length > 0
+      or nmcli_disable.changed
     - network_merged.reboot_enabled | bool
   notify: restart

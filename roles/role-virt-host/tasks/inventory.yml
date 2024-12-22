@@ -88,6 +88,7 @@
   when:
     - item.0.key in running_vms.list_vms
     - item.0.value.spec.state == 'running'
+    - item.1.vnet_name is defined
     - item.1.vnet_name == vm_admin_network_name
 
 - debug:

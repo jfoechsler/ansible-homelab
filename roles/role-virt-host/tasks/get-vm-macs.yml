@@ -5,13 +5,16 @@
   set_fact:
     dom_macs: "{{ dom_macs  + ['52:54:00' | random_mac] }}"
   loop: "{{ vm.value.spec.network.connections }}"
-  when: vm.key in create_vms | map(attribute='name')
+  when:
+    - item.vnet_name is defined
+    - vm.key in create_vms | map(attribute='name')
 
 - name: Find existing MAC
   set_fact:
     dom_macs: "{{ dom_macs + [vars['dom_dict_' + vm.value.key].domain.devices.interface.mac['@address']] }}"
   loop: "{{ vm.value.spec.network.connections }}"
   when:
+    - item.vnet_name is defined
     - vm.key in registered_vms.list_vms
     - vm.value.spec.network.connections | length == 1
 
@@ -22,6 +25,7 @@
   loop_control:
     index_var: idx
   when:
+    - item.vnet_name is defined
     - vm.key in registered_vms.list_vms
     - vm.value.spec.network.connections | length > 1
 
@@ -31,11 +35,12 @@
 
 - name: Update vm connections
   set_fact:
-    vm_network_connections: "{{ vm_network_connections + [item | combine({'macaddress': dom_macs[idx]})] }}"
+    vm_network_connections: "{{ vm_network_connections + [item | combine({'macaddress': dom_macs[idx] | default(item.macaddress)})] }}"
   loop: "{{ vm.value.spec.network.connections }}"
   loop_control:
     index_var: idx
-  when: dom_macs != []
+  when:
+    - dom_macs != [] or item.macaddress is defined
 
 - set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'vm_network_connections': vm_network_connections } | combine(vm_inventory[vm.key]) }) }}"
@@ -45,5 +50,6 @@
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'dhcp_mac': item.macaddress } | combine(vm_inventory[vm.key]) }) }}"
   loop: "{{ vm_network_connections }}"
   when:
+    - item.vnet_name is defined
     - dom_macs != []
     - item.vnet_name == vm_network_bridge_name
