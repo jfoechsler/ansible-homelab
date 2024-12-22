@@ -1,5 +1,8 @@
 ---
 
+- name: systemd reload
+  command: systemctl daemon-reload
+
 - name: dnsmasq restart
   systemd: name=dnsmasq state=restarted
 
@@ -8,3 +11,20 @@
 
 - name: reload-firewall
   command: firewall-cmd --reload
+
+- name: network manager restart
+  systemd: name="NetworkManager" state="restarted"
+
+- name: reboot nodes
+  shell: sleep 2 && shutdown -r now "Ansible reboot"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  listen: restart
+
+- name: wait for server to come back
+  become: false
+  wait_for_connection:
+    timeout: 300
+    delay: 30
+  listen: restart

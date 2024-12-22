@@ -1,0 +1,4 @@
+# Set true to avoid virtiofs issues
+http_dnf_repositories: false
+# Risking virtiofs issues
+leases_dir: "{{ vmfs_path }}/router/dhcp"

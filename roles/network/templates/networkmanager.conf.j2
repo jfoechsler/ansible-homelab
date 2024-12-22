@@ -3,6 +3,6 @@
 dns=none
 systemd-resolved=false
 rc-manager=unmanaged
-{% if network.no_auto_default is defined %}
-no-auto-default={{ network.no_auto_default | join(',') }}
+{% if network_merged.no_auto_default is defined %}
+no-auto-default={{ network_merged.no_auto_default | join(',') }}
 {% endif %}

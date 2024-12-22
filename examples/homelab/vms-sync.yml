@@ -1,0 +1,26 @@
+# Fetch VM inventory and VMs to be created.
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+- hosts: "{{ 'vms_' + stage if stage is defined else 'running_vms' }}"
+  become: True
+  gather_facts: no
+  pre_tasks:
+    - name: wait for server to come online
+      become: false
+      wait_for_connection:
+        timeout: 300
+    - name: Gathering facts
+      setup:
+  roles:
+    - base
+    - network
+    - firewalld
+  tasks:
+    - name: fedora-easy-karma
+      dnf: name=fedora-easy-karma state=latest
+      when: updates_testing_enabled | default(false) | bool

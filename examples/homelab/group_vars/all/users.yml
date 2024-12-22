@@ -1,0 +1,7 @@
+users:
+  - username: myuser
+    name: myuser
+    uid: 1001
+    groups: ['wheel']
+    ssh_key:
+      - "{{ ssh_public_key }}"

@@ -1,0 +1,24 @@
+---
+- include_vars: main.yml
+
+- name: Install packages
+  dnf:
+    name: "
+      dnsmasq
+      "
+    state: present
+
+- set_fact:
+    inside_nic: "{{ item.interface }}"
+  with_items: "{{ connection_facts }}"
+  when:
+    - item.config.router_binding is defined
+    - item.config.router_binding == 'inside_nic'
+
+- name: hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+  register: hosts_conf
+
+- include_tasks: dnsmasq.yml

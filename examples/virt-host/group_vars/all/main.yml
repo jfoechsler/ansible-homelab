@@ -1,6 +1,0 @@
-prefix_24: "192.168.0"
-ssh_public_key: "ssh-rsa AAAA..."
-domain: "example.com"
-owner: "myuser"
-data_vg: my_data
-data0_path: /mnt/data0

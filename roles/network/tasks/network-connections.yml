@@ -1,31 +1,96 @@
-- name: Network connection files
-  template:
-    src: connection.nmconnection.j2
-    dest: "/etc/NetworkManager/system-connections/{{ item.file | default(item.id) }}.nmconnection"
-    mode: 0600
-  loop: "{{ network.connections }}"
-  register: connection
+- debug:
+    msg: "{{ vars['ansible_' + item] }}"
+  with_items:
+    - "{{ ansible_interfaces }}"
+  when:
+    - vars['ansible_' + item]['type'] == 'ether'
 
-- name: Reload network connection from disk
-  command: "nmcli conn reload '{{ item.item.id }}'"
-  loop: "{{ connection.results }}"
-  when: item.changed
-
-- name: network connection up
-  command: "nmcli conn up '{{ item.id }}'"
-  loop: "{{ network.connections }}"
+- name: list connections
+  command: nmcli --get-values name con show --active
+  register: list_connections
   changed_when: False
 
-- name: network connection down
-  command: "nmcli conn down '{{ item.item.id }}'"
-  loop: "{{ connection.results }}"
+- set_fact:
+    connection_facts: []
+- name: facts
+  set_fact:
+    connection_facts: "{{ connection_facts + [{'interface':item.0,'config':item.1}] }}"
+  with_nested:
+    - "{{ ansible_interfaces }}"
+    - "{{ connections }}"
   when:
-    - connection.changed
-    - not (item.item.suppress_reload | default(false) | bool)
+    - vars['ansible_' + item.0]['type'] == 'ether'
+    - vars['ansible_' + item.0]['macaddress'] == item.1.macaddress
 
-- name: network connection up
-  command: "nmcli conn up '{{ item.item.id }}'"
-  loop: "{{ connection.results }}"
+- name: desired connections
+  set_fact:
+    desired_connections: "{{ desired_connections | default([]) + [item.config.id] }}"
+  with_items:
+    - "{{ connection_facts }}"
   when:
-    - connection.changed
-    - not (item.item.suppress_reload | default(false) | bool)
+    - not item.config.skip_config | default(false) | bool
+
+# Maybe don't need this reload
+- name: reload network connection from disk
+  command: "nmcli conn reload"
+  changed_when: False
+#  when: delete_connections.changed
+
+- name: nmcli
+  nmcli:
+    conn_name: "{{ item.config.id }}"
+#    conn_reload: "{{ item.config.suppress_reload | default(false) | bool | ternary('false', 'true') }}"
+    # reload seems to mean from disk, not taking down connection
+    conn_reload: 'true'
+    ifname: "{{ item.interface }}"
+    type: ethernet
+    ip4: "{{ item.config.static_ip if item.config.static_ip is defined else omit }}"
+    zone: "{{ item.config.zone if item.config.zone is defined else omit }}"
+    gw4: "{{ item.config.gateway if item.config.gateway is defined else omit }}"
+    gw4_ignore_auto: "{{ item.config.ignore_auto_routes if item.config.ignore_auto_routes is defined else omit }}"
+    state: present
+  with_items:
+    - "{{ connection_facts }}"
+  when:
+    - not item.config.skip_config | default(false) | bool
+    - not item.config.state | default('') == 'disabled'
+  register: nmcli
+
+- name: connection disable
+  command: nmcli con modify {{ item.config.id }} autoconnect no
+  with_items:
+    - "{{ connection_facts }}"
+  when:
+    - item.config.state | default('') == 'disabled'
+    - item.config.id in list_connections.stdout_lines
+  register: nmcli_disable
+
+# FIX: Solve the need for a second run to delete stale connections
+- name: delete connections not in desired list
+  command: nmcli con delete "{{ item }}"
+  loop: "{{ list_connections.stdout_lines }}"
+  when:
+    - connections | length > 0
+    - item != 'lo'
+    - item is not in desired_connections
+    - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length == 0
+#  register: delete_connections
+
+# Restart network manager, when nmcli changed
+- name: notify network manager
+  assert: { that: true, quiet: true }
+  changed_when: true
+  when:
+    - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length > 0
+      or nmcli_disable.changed
+  notify: network manager restart
+
+# Reboot node when nmcli changed and reboot is enabled
+- name: notify reboot
+  assert: { that: true, quiet: true }
+  changed_when: true
+  when:
+    - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length > 0
+      or nmcli_disable.changed
+    - network_merged.reboot_enabled | bool
+  notify: restart

@@ -1,0 +1,6 @@
+network_merged: |
+  {%- if network is defined and network is iterable -%}
+  {{ network_defaults | combine (network, recursive=True) }}
+  {%- else -%}
+  {{ network_defaults }}
+  {%- endif -%}

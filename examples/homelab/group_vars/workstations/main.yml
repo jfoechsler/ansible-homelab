@@ -1,0 +1,5 @@
+sudo_admin: true
+workstation_packages: [
+  '@multimedia',
+  '@workstation-product-environment',
+]

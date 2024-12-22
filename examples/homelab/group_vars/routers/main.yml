@@ -1,0 +1,40 @@
+network:
+  network_manager_resolved_disable: true
+  dns_servers:
+#    - 192.168.0.1 # temp fallback
+    - "{{ managed_dns_ip }}"
+
+router_features:
+  dhcpd:
+    enabled: true
+    use_external_router: "{{ external_router_ip }}"
+
+# DHCP clients DNS and IP reservation
+dhcp_reservations:
+  lan_hosts:
+    - name: client-device
+      mac: '...'
+
+firewalld:
+  enabled: true
+  zones:
+    - name: internal
+      service_allow:
+        - 'dns'
+        - 'dhcp'
+        - 'ssh'
+      service_remove: []
+    - name: external
+      masquerade: true
+      service_allow: []
+      service_remove:
+        - 'ssh'
+
+  policies:
+    - name: policy_int_to_ext
+      xml: |
+        <?xml version="1.0" encoding="utf-8"?>
+        <policy target="ACCEPT">
+          <ingress-zone name="internal"/>
+          <egress-zone name="external"/>
+        </policy>

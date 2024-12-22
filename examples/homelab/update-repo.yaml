@@ -1,0 +1,41 @@
+# Fetch VM inventory
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+- hosts: dnf_repo_updater
+  become: True
+  serial: 1
+  vars:
+    testrepos:
+      - /var/cache/dnf/
+      - /var/cache/libdnf5/
+    localrepo: /mnt/vmfs/rpm_repo/{{ ansible_distribution_major_version }}
+  tasks:
+    - name: repo tools
+      dnf: name="dnf-utils,createrepo_c" state=present
+
+    - name: Copy cache to repo
+      shell: rsync -vr --prune-empty-dirs --exclude "dz-fedora" -f "+ */" -f "+ *.rpm" -f "- *" {{ item }} {{ localrepo }}
+      with_items: "{{ testrepos }}"
+
+    - name: Update repo metadata
+      shell: createrepo -d --repo=dz-fedora -c createrepo_cache .
+      args:
+        chdir: "{{ localrepo }}"
+
+    - name: Find old repo packages
+      shell: repomanage -o {{ localrepo }}
+      register: repomanage
+
+    - name: Purge old repo packages
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items: "{{ repomanage.stdout_lines }}"
+
+    - name: Clean staging cache
+      shell: dnf clean all

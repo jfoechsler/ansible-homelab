@@ -80,6 +80,8 @@
   virt:
     command: undefine
     name: "{{ vm.key }}"
+    flags:
+      - nvram
   with_dict: "{{ vm_inventory }}"
   loop_control:
     loop_var: vm

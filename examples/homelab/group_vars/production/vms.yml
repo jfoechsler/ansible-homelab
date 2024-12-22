@@ -1,0 +1,117 @@
+vm_image:
+  f40: Fedora-Cloud-Base-AmazonEC2.x86_64-40-1.14.raw.xz
+  f41: Fedora-Cloud-Base-AmazonEC2-41-1.4.x86_64.raw.xz
+
+#vm_data:
+#  data1:
+#    name: data1
+#    size: 10
+#    host: myserver
+#    vm: vm1
+#    device: vdb
+
+eips:
+  153:
+    vm: apps-1
+
+vmfs_shares:
+  router:
+    host: myserver
+    vms:
+      - gateway-1
+  pihole-etc:
+    host: myserver
+    vm: apps-1
+  rpm_repo:
+    host: myserver
+    vms:
+      - gateway-1
+      - fedora-1
+      - apps-1
+      - staging-1
+
+# States:
+# created, running, shutdown, destroyed
+vms:
+  - name: gateway-1
+    vcpu: 4
+    inventory_groups:
+      - vms_dhcpd
+      - routers_production
+      - router_vms
+      - vms_production
+    state: running
+    image: f41
+    host: myserver
+    disk: 10
+    vm_type: efi
+    pci_host_device: 'address domain="0x0000" bus="0x02" slot="0x00" function="0x0"'
+    network:
+      # Define hostname via cloud init
+      static_hostname: true
+      connections:
+        - id: default
+          vnet_name: default
+          ignore_auto_routes: true
+        - id: host-bridge
+          vnet_name: host-bridge
+          static_ip: "192.168.0.3/24"
+          gateway: "{{ external_router_ip }}"
+          zone: internal
+          router_binding: inside_nic
+        - id: external
+          macaddress: '3c:7c:3f:2e:80:fc'
+          zone: external
+          state: disabled
+
+  - name: staging-1
+    inventory_groups:
+      - vms_staging
+      - router_vms
+      - routers_staging
+      - container_hosts_staging
+      - dnf_repo_updater
+    state: running
+    image: f41
+    host: myserver
+    disk: 10
+    delete_on_termination: true
+    vm_type: efi
+    serial: 1
+    network:
+      connections:
+        - id: host-bridge
+          vnet_name: host-bridge
+          zone: internal
+          router_binding: inside_nic
+
+  - name: apps-1
+    inventory_groups:
+      - vms_production
+      - container_hosts_production
+    state: running
+    image: f41
+    host: myserver
+    disk: 20
+    delete_on_termination: false
+    vm_type: efi
+    serial: 1
+    network:
+      connections:
+        - id: host-bridge
+          vnet_name: host-bridge
+
+  - name: fedora-1
+    vcpu: 4
+    inventory_groups:
+      - dnf_repo_updater
+      - workstation_staging
+    state: running
+    image: f41
+    host: myserver
+    disk: 40
+    vm_type: efi
+    network:
+      connections:
+        - id: host-bridge
+          vnet_name: host-bridge

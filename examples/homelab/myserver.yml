@@ -1,0 +1,12 @@
+- hosts: myserver
+  become: True
+  roles:
+    - base
+    - lvm
+    - samba
+    - libvirtd
+    - firewalld
+    - syncthing
+    - workstation
+  tasks:
+    - include_tasks: library/checkupdates.yml

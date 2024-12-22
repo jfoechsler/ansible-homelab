@@ -1,0 +1,15 @@
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+- hosts: "{{ 'vms_' + stage if stage is defined else 'running_vms' }}"
+  become: True
+  serial: 1
+  tasks:
+    - include_tasks: library/updatereboot.yml
+    - include_tasks: library/checkupdates.yml
+  handlers:
+    - import_tasks: handlers/main.yml
