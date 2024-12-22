@@ -6,7 +6,7 @@ vm_image:
 #  data1:
 #    name: data1
 #    size: 10
-#    host: define
+#    host: myserver
 #    vm: vm1
 #    device: vdb
 
@@ -96,6 +96,21 @@ vms:
     delete_on_termination: false
     vm_type: efi
     serial: 1
+    network:
+      connections:
+        - id: host-bridge
+          vnet_name: host-bridge
+
+  - name: fedora-1
+    vcpu: 4
+    inventory_groups:
+      - dnf_repo_updater
+      - workstation_staging
+    state: running
+    image: f41
+    host: myserver
+    disk: 40
+    vm_type: efi
     network:
       connections:
         - id: host-bridge

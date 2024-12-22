@@ -1,0 +1,28 @@
+# Create VM inventory
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+- hosts: workstation_staging
+  become: True
+  roles:
+    - base
+    - network
+    - users
+    - workstation
+    - lvm
+    - libvirtd
+    - samba
+    - firewalld
+    - syncthing
+  tasks:
+    - name: fedora-easy-karma
+      dnf: name=fedora-easy-karma state=present
+      when: updates_testing_enabled | default(false) | bool
+    - name: staging repo
+      dnf: name="{{ pkgs_staging|join(',') }}" state=present
+      when: pkgs_staging|default([])|length > 0
+    - include_tasks: library/updatereboot.yml
