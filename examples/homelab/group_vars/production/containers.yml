@@ -1,0 +1,48 @@
+# States:
+# present, absent
+containers:
+  - name: pihole
+    host: apps-1b
+    image: docker.io/pihole/pihole:2024.07.0
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 3080:80/tcp
+    volumes:
+      - path: /etc/pihole
+        type: vmfs
+        name: pihole-etc
+      - path: /etc/dnsmasq.d/homelab.conf
+        type: template
+        name: pihole-dnsmasq
+    state: present
+    environment:
+      TZ: 'Europe/Copenhagen'
+      DNSMASQ_LISTENING: 'all'
+      WEB_GID: '999'
+      PIHOLE_DNS_: "{{ managed_dns_ip }}"
+      VIRTUAL_HOST: "pihole.{{ domain }}"
+    dnsmasq_templates:
+      - "dnsmasq-pihole"
+    http_port_idx: 2
+    http_proxy: nginx
+
+  - name: nginx
+    host: apps-1b
+    image: docker.io/library/nginx
+    ports:
+      - 80:80/tcp
+    volumes:
+      - path: /etc/nginx/conf.d/ansible.conf
+        type: template
+        name: nginx-containers
+      - path: /usr/share/nginx/html
+        type: vmfs
+        name: rpm_repo
+      - path: /etc/nginx/conf.d/dnf.conf
+        type: template
+        name: nginx-dnf
+    state: present
+    dnsmasq_templates:
+      - "dnsmasq-ingress"
+      - "dnsmasq-dnf"

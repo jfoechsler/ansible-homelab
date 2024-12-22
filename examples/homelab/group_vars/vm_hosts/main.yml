@@ -1,0 +1,3 @@
+# workaround for power button to shut down machine
+#chassis: vm
+network_bridge_name: br0

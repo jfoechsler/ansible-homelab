@@ -1,0 +1,21 @@
+# Fetch VM inventory and VMs to be created.
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+# Update Dnsmasq from inventory for DHCP
+- hosts: vms_dhcpd
+  become: True
+  tasks:
+    - include_role:
+        name: role-dnsmasq
+        tasks_from: vm-reservations
+
+# Perform VM hosts setup
+- hosts: vm_hosts
+  become: True
+  roles:
+    - role-virt-host

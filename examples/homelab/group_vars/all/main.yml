@@ -1,0 +1,20 @@
+smb_workgroup: WORKGROUP
+ssh_public_key: "ssh-rsa AAAA..."
+prefix_24: "192.168.0"
+wlan_prefix_24: "192.168.3"
+domain: "example.com"
+owner: "myuser"
+data_vg: my_data
+data0_path: /mnt/data0
+# rpm repo
+dnf_repositories:
+  homelab:
+    name: homelab-fedora
+    template: homelab-fedora.repo.j2
+dnf_repositories_create:
+  - homelab
+
+# Currently active IP for Dnsmasq
+managed_dns_ip: 192.168.0.3
+# ISP router address
+external_router_ip: 192.168.0.1

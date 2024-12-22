@@ -1,0 +1,51 @@
+all:
+  children:
+    # Group membership for testing
+    testing:
+      children:
+        vms_testing:
+
+    # Group membership for staging
+    staging:
+      children:
+        vms_staging:
+        workstation_staging:
+
+    # Group membership for production
+    production:
+      children:
+        vms_production:
+        workstations_production:
+
+    workstations:
+      children:
+        workstation_staging:
+        workstation_production:
+
+    workstations_production:
+      hosts:
+        myserver:
+          ansible_host: localhost
+          data_dev: /dev/disk/by-id/....
+          data0_lv_size: 65%VG
+          # Local DNF repo path
+          vmfs_path: /mnt/SSD/vmfs
+          #use_dnf_staging: false
+
+    vm_hosts:
+      hosts:
+        myserver:
+          vm_volume_group: SSD
+          vm_data_path: /mnt/SSD
+
+    routers:
+      children:
+        routers_production:
+        routers_staging:
+        routers_testing:
+
+    container_hosts:
+      children:
+        container_hosts_production:
+        container_hosts_staging:
+        container_hosts_testing:

@@ -1,0 +1,5 @@
+ansible_user: fedora
+vmfs_path: /mnt/vmfs
+
+network:
+  reboot_enabled: true

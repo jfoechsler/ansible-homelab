@@ -1,0 +1,15 @@
+# Create VM inventory
+- hosts: vm_hosts
+  become: True
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
+
+- hosts: "{{ 'routers_' + stage if stage is defined else 'routers' }}"
+  become: True
+  roles:
+    - base
+    - network
+    - firewalld
+    - role-dnsmasq

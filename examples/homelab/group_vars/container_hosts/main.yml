@@ -1,0 +1,5 @@
+network:
+  network_manager_resolved_disable: true
+  dns_servers:
+    #    - 192.168.0.1 # temp fallback
+    - "{{ managed_dns_ip }}"

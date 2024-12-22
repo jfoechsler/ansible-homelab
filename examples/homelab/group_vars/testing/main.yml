@@ -1,0 +1,6 @@
+updates_testing_enabled: true
+#use_dnf_staging: false
+environment_suffix: "-testing"
+
+dnsmasq_state_needed: 'stopped'
+dnsmasq_enabled: 'no'

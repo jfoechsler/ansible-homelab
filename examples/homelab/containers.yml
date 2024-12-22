@@ -1,0 +1,52 @@
+# Create VM inventory
+- hosts: vm_hosts
+  become: True
+  roles:
+    # Make sure VMFS is created
+    - role-virt-host
+
+- hosts: "{{ 'container_hosts_' + stage if stage is defined else 'container_hosts' }}"
+  become: True
+  gather_facts: no
+  pre_tasks:
+    # VM restart for VMFS
+    - name: wait for server to come online
+      become: false
+      wait_for_connection:
+        timeout: 300
+    - name: Gathering facts
+      setup:
+  roles:
+    - role-container-host
+
+- hosts: routers
+  become: True
+  tasks:
+    - set_fact:
+        dnsmasq_containers_conf_production: "{{ dnsmasq_containers_conf | default('') + hostvars[item].dnsmasq_conf | default('') }}"
+      with_items: "{{ groups['container_hosts_production'] }}"
+      when:
+        - stage is not defined
+    - set_fact:
+        "dnsmasq_containers_conf_{{ stage }}": "{{ dnsmasq_containers_conf | default('') + hostvars[item].dnsmasq_conf | default('') }}"
+      with_items: "{{ groups['container_hosts_' + stage] }}"
+      when:
+        - stage is defined
+    - name: dnsmasq container directives
+      copy:
+        content: "{{ dnsmasq_containers_conf_production }}"
+        dest: /etc/dnsmasq.d/containers_production.conf
+      notify: dnsmasq restart
+      when:
+        - dnsmasq_containers_conf_production is defined
+        - stage is not defined
+    - name: dnsmasq container directives
+      copy:
+        content: "{{ vars['dnsmasq_containers_conf_' + stage] }}"
+        dest: /etc/dnsmasq.d/containers_{{ stage }}.conf
+      notify: dnsmasq restart
+      when:
+        - stage is defined
+        - vars['dnsmasq_containers_conf_' + stage] is defined
+  handlers:
+    - import_tasks: handlers/main.yml

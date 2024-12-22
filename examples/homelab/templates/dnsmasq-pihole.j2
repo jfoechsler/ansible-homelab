@@ -1,0 +1,4 @@
+# dnsmasq configuration for using pihole by dhcp clients
+# Template to be rendered on pi-hole host.
+# 0.0.0.0 means the main (non pi-hole) dnsmasq itself
+dhcp-option=option:dns-server,{{ eip_address | default(ansible_default_ipv4.address) }},0.0.0.0
