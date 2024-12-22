@@ -1,4 +1,3 @@
 ---
 
-- name: systemd reload
-  command: systemctl daemon-reload
+- import_tasks: ../../handlers/main.yml

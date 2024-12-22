@@ -1,5 +1,8 @@
 ---
 
+- name: systemd reload
+  command: systemctl daemon-reload
+
 - name: dnsmasq restart
   systemd: name=dnsmasq state=restarted
 

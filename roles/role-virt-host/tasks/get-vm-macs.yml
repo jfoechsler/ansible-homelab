@@ -53,3 +53,4 @@
     - item.vnet_name is defined
     - dom_macs != []
     - item.vnet_name == vm_network_bridge_name
+    - item.static_ip is not defined
