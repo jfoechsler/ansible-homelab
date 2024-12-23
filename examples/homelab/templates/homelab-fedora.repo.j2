@@ -1,6 +1,6 @@
 # {{ ansible_managed }}
-[homelab-fedora]
-name=homelab-fedora
+[{{ dnf_repositories[dnf_staging_repo].name }}]
+name={{ dnf_repositories[dnf_staging_repo].name }}
 {% if http_dnf_repositories|default(false)|bool %}
 baseurl=http://pkgs.{{ domain }}/{{ ansible_distribution_major_version }}
 {% else %}

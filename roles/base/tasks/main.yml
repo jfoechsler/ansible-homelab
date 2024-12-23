@@ -58,9 +58,9 @@
 
 - name: Create local repositories
   template:
-    src: "{{ dnf_repositories[item].template }}"
-    dest: /etc/yum.repos.d/{{ dnf_repositories[item].name }}.repo
-  with_items: "{{ dnf_repositories_create }}"
+    src: "{{ item.value.template }}"
+    dest: /etc/yum.repos.d/{{ item.value.name }}.repo
+  with_dict: "{{ dnf_repositories }}"
 
 - name: Inotify watches increase
   sysctl:

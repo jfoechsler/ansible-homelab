@@ -26,3 +26,8 @@
       dnf: name="{{ pkgs_staging|join(',') }}" state=present
       when: pkgs_staging|default([])|length > 0
     - include_tasks: library/updatereboot.yml
+  vars:
+    pkgs_staging: [
+      'kernel',
+      'kernel-modules' # not installed in cloud images
+    ]

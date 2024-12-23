@@ -1,4 +1,4 @@
 updates_testing_enabled: false
 dnf_keepcache_enabled: false
 use_dnf_staging: false
-dnf_repositories_create: []
+dnf_repositories: {}

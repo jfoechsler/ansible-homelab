@@ -19,11 +19,11 @@
       dnf: name="dnf-utils,createrepo_c" state=present
 
     - name: Copy cache to repo
-      shell: rsync -vr --prune-empty-dirs --exclude "dz-fedora" -f "+ */" -f "+ *.rpm" -f "- *" {{ item }} {{ localrepo }}
+      shell: rsync -vr --prune-empty-dirs --exclude "{{ dnf_repositories[dnf_staging_repo].name }}-*" -f "+ */" -f "+ *.rpm" -f "- *" {{ item }} {{ localrepo }}
       with_items: "{{ testrepos }}"
 
     - name: Update repo metadata
-      shell: createrepo -d --repo=dz-fedora -c createrepo_cache .
+      shell: createrepo -d --repo={{ dnf_repositories[dnf_staging_repo].name }} -c createrepo_cache .
       args:
         chdir: "{{ localrepo }}"
 
