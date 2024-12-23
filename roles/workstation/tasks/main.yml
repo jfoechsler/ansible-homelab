@@ -37,7 +37,21 @@
   shell: dnf -y remove anaconda*
   when: "'anaconda' in ansible_facts.packages"
 
-- name: Install packages
+- name: Add packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libreoffice-x11 # Avoid KDE framework
+
+- name: Remove packages
+  dnf:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - libreoffice-kf5 # Avoid KDE framework
+
+- name: Install workstation packages
   dnf:
     name: "{{ workstation_packages | join(',') }}"
     state: present
