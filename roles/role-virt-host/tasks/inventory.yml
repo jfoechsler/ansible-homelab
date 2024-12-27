@@ -65,6 +65,8 @@
     - item.stdout is defined
 
 - set_fact:
+    create_vms: []
+- set_fact:
     create_vms: "{{ create_vms + [vm.value.spec] }}"
   with_dict: "{{ vm_inventory }}"
   loop_control:

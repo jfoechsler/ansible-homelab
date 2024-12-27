@@ -45,6 +45,8 @@
     - saved_xml.changed
       or vm.key in create_vms | map(attribute='name')
 
+- set_fact:
+    updated_vms: "{{ updated_vms | default([]) }}"
 - name: Register updated or created VM
   set_fact:
     updated_vms: "{{ updated_vms + [vm.value.spec] }}"

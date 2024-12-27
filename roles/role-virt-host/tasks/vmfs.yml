@@ -4,7 +4,15 @@
   with_dict: "{{ vmfs_shares }}"
   when: item.value.host == inventory_hostname
 
-# Moved to vm template
+# Currently filesystem xml done in vm template. Could be done as attach device approach
+#get-vmfs.yml contents:
+#  - set_fact:
+#      vmfs_current: "{{ vmfs_current + [{'vm': vm.key, 'source': item.source['@dir'], 'target': item.target['@dir']}] }}"
+#    with_items:
+#      - "{{ vars['dom_dict_' + vm.key | replace('-', '_')].domain.devices.filesystem }}"
+#    when: item.source['@dir'] is defined
+#
+
 #- include_tasks: get-vmfs.yml
 #  with_dict:
 #    - "{{ vm_inventory }}"

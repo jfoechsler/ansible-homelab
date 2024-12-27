@@ -1,5 +1,7 @@
 
 - set_fact:
+    vm_mounts_current: "{{ vm_mounts_current | default([]) }}"
+- set_fact:
     vm_mounts_current: "{{ vm_mounts_current + [{'vm': vm.name, 'source': item.source['@dev'], 'target': item.target['@dev']}] }}"
   with_items:
     - "{{ vars['dom_dict_' + vm.name | replace('-', '_')].domain.devices.disk }}"

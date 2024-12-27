@@ -3,14 +3,7 @@ vm_data: {}
 vm_data_path: "{{ data0_path }}"
 vm_volume_group: "{{ data_vg }}"
 vm_images: "{{ data0_path }}/share/Linux-images"
-create_vms: []
-updated_vms: []
-vmfs_current: []
 vmfs_shares: {}
-vmfs_desired: []
-vm_inventory: {}
-vm_mounts_current: []
-vm_mounts_desired: []
 vm_network_bridge_name: host-bridge
 vm_admin_network_device: virbr0
 vm_admin_network_name: default

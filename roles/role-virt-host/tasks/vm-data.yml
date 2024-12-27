@@ -16,6 +16,8 @@
   when: vm.host == inventory_hostname
 
 - set_fact:
+    vm_mounts_desired: "{{ vm_mounts_desired | default([]) }}"
+- set_fact:
     vm_mounts_desired: "{{ vm_mounts_desired + [{'vm': item.value.vm, 'source': '/dev/' + data_vg + '/vmdata-' + item.value.name, 'target': item.value.device }] }}"
   with_dict: "{{ vm_data }}"
   when: item.value.host == inventory_hostname
