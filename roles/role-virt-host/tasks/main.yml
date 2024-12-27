@@ -24,8 +24,3 @@
 - include_tasks: vm-data.yml
   # Refresh inventory needed due to dynamic admin IPs
 - include_tasks: inventory.yml
-
-- name: hosts file
-  template:
-    src: hosts.j2
-    dest: /etc/hosts

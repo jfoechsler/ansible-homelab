@@ -8,7 +8,7 @@ Features provided:
 * Manage Dnsmasq based DHCP and DNS.
 * Supported Dnsmasq conf.d content based on output from container templates, such as `dhcp-option` and `cname` for Pihole and Nginx proxy support.
 * Manage firewalld zones, rules and policy.
-* Supports enabling static DNS resolver configration instead of NetworkManager/resolved managed. 
+* Supports enabling static DNS resolver configuration instead of NetworkManager/resolved managed. 
 * Manage Yum repositories to maintain a local update staging mirror.
 
 # Setup up from scratch
@@ -34,9 +34,9 @@ nmcli con modify enp5s0 autoconnect 0
 The different types of network modes supported are:
 1. ISP router as gateway and DHCP server. Dnsmasq added in ISP router as custom DNS. Manages VMs DHCP/DNS. 
 2. ISP router as gateway only. Dnsmasq manages DHCP/DNS for VMs and other clients.
-3. Fedora Dnsmasq as DNS/DHCP.
+3. Fedora Dnsmasq as DNS/DHCP and firewalld to manage routing.
    1. as managed VM.
    2. as physical managed host.
 
 # Getting started
-See examples directory to get started.
+See example [homelab](examples/homelab) directory to get started.
