@@ -28,8 +28,9 @@ all:
           ansible_host: localhost
           data_dev: /dev/disk/by-id/....
           data0_lv_size: 65%VG
-          # Local DNF repo path
+          # Path used for DNF repo path
           vmfs_path: /mnt/SSD/vmfs
+          # Set false to override local mirror restriction
           #use_dnf_staging: false
 
     vm_hosts:

@@ -19,7 +19,6 @@
   roles:
     - network
     - base
-    - firewalld
   tasks:
     - name: fedora-easy-karma
       dnf: name=fedora-easy-karma state=latest

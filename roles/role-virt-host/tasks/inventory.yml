@@ -21,6 +21,7 @@
     loop_var: vm
   when:
     - vm.host == inventory_hostname
+    - vm_filter is defined | ternary(true if vm_filter|default() == vm.name else false, true)
 
 - name: Inventory VM elastic IP
   set_fact:
