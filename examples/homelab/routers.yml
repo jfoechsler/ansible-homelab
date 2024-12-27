@@ -9,7 +9,7 @@
 - hosts: "{{ 'routers_' + stage if stage is defined else 'routers' }}"
   become: True
   roles:
-    - base
     - network
+    - base
     - firewalld
     - role-dnsmasq

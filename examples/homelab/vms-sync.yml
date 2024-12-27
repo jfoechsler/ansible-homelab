@@ -17,8 +17,8 @@
     - name: Gathering facts
       setup:
   roles:
-    - base
     - network
+    - base
     - firewalld
   tasks:
     - name: fedora-easy-karma
