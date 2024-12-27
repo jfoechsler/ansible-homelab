@@ -73,6 +73,16 @@
     - vm.key not in registered_vms.list_vms
     - vm.value.spec.state in ['running', 'created']
 
+- name: Groups based on Vm running state
+  set_fact:
+    vm_inventory: "{{ vm_inventory | combine({ vm.key: { 'groups': ['running_vms'] + vm.value.spec.inventory_groups | default([]) } }, recursive=True) }}"
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
+  when:
+    - vm.key in running_vms.list_vms
+    - vm.value.spec.state in ['running', 'created']
+
 - debug:
     msg: "VMs to be created: {{ create_vms }}"
 
@@ -87,7 +97,7 @@
   loop: "{{ vm_inventory | dict2items | subelements('value.vm_network_connections', skip_missing=True) }}"
   when:
     - item.0.key in running_vms.list_vms
-    - item.0.value.spec.state == 'running'
+    - item.0.value.spec.state in ['running', 'created']
     - item.1.vnet_name is defined
     - item.1.vnet_name == vm_admin_network_name
 
@@ -98,7 +108,7 @@
     ansible_host={{ 'vm-' + vm.key }}
     dns_host={{ 'vm-' + vm.key }}
     admin_ip={{ vm.value.address | default('') }}
-    groups={{ (['vms'] + (['running_vms'] + (vm.value.spec.inventory_groups | default([])) if vm.value.spec.state == 'running' else [])) | join(',') }}
+    groups={{ (['vms'] + vm.value.groups | default([])) | join(',') }}
     dhcp_mac={{ vm.value.dhcp_mac if vm.value.dhcp_mac is defined else omit }}
     vm_network_connections={{ vm.value.vm_network_connections }}
     eip={{ vm.value.eip if vm.value.eip is defined else omit }}
@@ -111,3 +121,8 @@
 
 - debug:
     msg: "{{ groups }}"
+
+- name: hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
