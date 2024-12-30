@@ -1,9 +1,10 @@
 # Create VM inventory
 - hosts: vm_hosts
   become: True
-  roles:
-    # Make sure VMFS is created
-    - role-virt-host
+  tasks:
+    - include_role:
+        name: role-virt-host
+        tasks_from: inventory
 
 - hosts: "{{ 'container_hosts_' + stage if stage is defined else 'container_hosts' }}"
   become: True
