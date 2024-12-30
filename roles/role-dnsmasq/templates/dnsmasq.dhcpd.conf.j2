@@ -4,6 +4,10 @@ filterwin2k
 dhcp-name-match=set:wpad-ignore,wpad
 dhcp-ignore-names=tag:wpad-ignore
 
+{% if router_features_merged.dns.client_servers is defined %}
+dhcp-option=option:dns-server,{{ router_features_merged.dns.client_servers | join(',') }}
+{% endif %}
+
 dhcp-range={{ prefix_24 }}.50,{{ prefix_24 }}.150,24h
 {% for dhcp_host in leases.lan_hosts %}
 dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ (dhcp_host.name | split(','))[0] }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}

@@ -22,8 +22,8 @@ containers:
       WEB_GID: '999'
       PIHOLE_DNS_: "{{ managed_dns_ip }}"
       VIRTUAL_HOST: "pihole.{{ domain }}"
-    dnsmasq_templates:
-      - "dnsmasq-pihole"
+#    dnsmasq_templates:
+#      - "dnsmasq-pihole"
     http_port_idx: 2
     http_proxy: nginx
 

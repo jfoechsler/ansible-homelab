@@ -4,10 +4,12 @@ default_features:
     # provide router address to clients instead of own address
     #use_external_router: 192.168.0.1
   dns:
-    # upstream servers
-    servers:
+    upstream_servers:
       - '1.1.1.1'
       - '8.8.8.8'
+#    client_servers:
+#      - 0.0.0.0
+#      - "{{ external_router_ip }}"
 
 leases_dir: "/var/local/ansible-dnsmasq"
 dnsmasq_state_needed: started

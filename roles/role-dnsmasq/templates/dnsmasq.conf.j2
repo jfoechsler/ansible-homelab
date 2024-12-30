@@ -13,9 +13,9 @@ interface={{ inside_nic }}
 except-interface=lo
 bind-interfaces
 
-{% if router_features_merged.dns.servers is defined %}
+{% if router_features_merged.dns.upstream_servers is defined %}
 no-resolv
-{% for server in router_features_merged.dns.servers %}
+{% for server in router_features_merged.dns.upstream_servers %}
 server={{ server }}
 {% endfor %}
 {% else %}

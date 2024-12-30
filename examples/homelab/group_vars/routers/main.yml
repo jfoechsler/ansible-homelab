@@ -8,6 +8,11 @@ router_features:
   dhcpd:
     enabled: true
     use_external_router: "{{ external_router_ip }}"
+  dns:
+    client_servers:
+      - "{{ prefix_24 }}.153"
+      - "0.0.0.0"
+      - "{{ external_router_ip }}"
 
 # DHCP clients DNS and IP reservation
 dhcp_reservations:
