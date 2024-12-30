@@ -1,5 +1,5 @@
 
-- shell: dnf setopt=disable_excludes=* list updates
+- shell: dnf4 --disableexcludes=all list updates
   changed_when: False
   register: updates
 
