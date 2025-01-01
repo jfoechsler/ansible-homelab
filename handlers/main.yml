@@ -5,6 +5,7 @@
 
 - name: dnsmasq restart
   systemd: name=dnsmasq state=restarted
+  when: dnsmasq_enabled == 'yes'
 
 - name: systemd resolved restart
   systemd: name=systemd-resolved state=restarted
