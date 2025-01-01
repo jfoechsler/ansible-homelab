@@ -1,2 +1,3 @@
 use_dnf_staging: true
 environment_suffix: ""
+dnsmasq_enabled: 'yes'
