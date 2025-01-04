@@ -3,12 +3,11 @@ vm_image:
   f41: Fedora-Cloud-Base-AmazonEC2-41-1.4.x86_64.raw.xz
 
 #vm_data:
-#  data1:
-#    name: data1
+#  etcd1:
+#    name: etcd-data1
 #    size: 10
 #    host: myserver
-#    vm: vm1
-#    device: vdb
+#    vm: apps-1
 
 eips:
   153:
@@ -100,6 +99,11 @@ vms:
       connections:
         - id: host-bridge
           vnet_name: host-bridge
+#    disks:
+#      - device: vdb
+#        vm_data: etcd1
+#        fs: xfs
+#        mount: /mnt/etcd-data1
 
   - name: fedora-1
     vcpu: 4
