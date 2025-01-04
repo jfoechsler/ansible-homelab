@@ -20,7 +20,7 @@
 
 - include_tasks: networks.yml
 - include_tasks: vmfs.yml
-- include_tasks: vms.yml
 - include_tasks: vm-data.yml
+- include_tasks: vms.yml
   # Refresh inventory needed due to dynamic admin IPs
 - include_tasks: inventory.yml

@@ -1,0 +1,16 @@
+# disk mounts
+- name: filesystem on vm disk devices
+  with_items: "{{ vm_mounts }}"
+  filesystem:
+    fstype: "{{ item.fs }}"
+    dev: "/dev/{{ item.device }}"
+    resizefs: true
+
+- name: mount vm disk device
+  with_items: "{{ vm_mounts }}"
+  mount:
+    name: "{{ item.mount }}"
+    src: "/dev/{{ item.device }}"
+    state: mounted
+    fstype: "{{ item.fs }}"
+    opts: 'defaults'

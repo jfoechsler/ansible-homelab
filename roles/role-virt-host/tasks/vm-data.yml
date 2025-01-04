@@ -7,20 +7,3 @@
     size: "{{ item.value.size }}G"
   with_dict: "{{ vm_data }}"
   when: item.value.host == inventory_hostname
-
-- include_tasks: get-vm-mounts.yml
-  with_items:
-    - "{{ vms }}"
-  loop_control:
-    loop_var: vm
-  when: vm.host == inventory_hostname
-
-- set_fact:
-    vm_mounts_desired: "{{ vm_mounts_desired | default([]) }}"
-- set_fact:
-    vm_mounts_desired: "{{ vm_mounts_desired + [{'vm': item.value.vm, 'source': '/dev/' + data_vg + '/vmdata-' + item.value.name, 'target': item.value.device }] }}"
-  with_dict: "{{ vm_data }}"
-  when: item.value.host == inventory_hostname
-
-- command: /usr/bin/virsh attach-disk --persistent {{ item.vm }} {{ item.source }} {{ item.target }}
-  with_items: "{{ vm_mounts_desired|difference(vm_mounts_current) }}"
