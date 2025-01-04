@@ -13,6 +13,7 @@
     path: "{{ mount_path }}"
     owner: "{{ item.0.user if item.0.user is defined else omit }}"
     state: directory
+    mode: "{{ item.1.mode if item.1.mode is defined else omit }}"
   loop: "{{ ctr_dict | subelements('volumes', skip_missing=True) }}"
   vars:
     mount_path: "{{ [vmfs_path, item.1.name, item.1.subdir|default('')] | join('/') }}"

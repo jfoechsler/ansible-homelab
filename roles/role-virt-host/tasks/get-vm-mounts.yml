@@ -1,8 +1,15 @@
+# Get disks currently attached
+- set_fact:
+    vm_mounts: []
+- set_fact:
+    vm_mounts: "{{ vm_mounts + [item.0] }}"
+  with_nested:
+    - "{{ vm.value.spec.disks | default([]) }}"
+    - "{{ vars['dom_dict_' + vm.value.key].domain.devices.disk }}"
+  when:
+    - item.0.vm_data is defined
+    - item.1.source['@dev'] is defined
+    - item.1.source['@dev'] == '/dev/' + data_vg + '/vmdata-' + vm_data[item.0.vm_data].name
 
 - set_fact:
-    vm_mounts_current: "{{ vm_mounts_current | default([]) }}"
-- set_fact:
-    vm_mounts_current: "{{ vm_mounts_current + [{'vm': vm.name, 'source': item.source['@dev'], 'target': item.target['@dev']}] }}"
-  with_items:
-    - "{{ vars['dom_dict_' + vm.name | replace('-', '_')].domain.devices.disk }}"
-  when: item.source['@dev'] is defined
+    vm_inventory: "{{ vm_inventory | combine({ vm.key: {'vm_mounts': vm_mounts } | combine(vm_inventory[vm.key]) }) }}"

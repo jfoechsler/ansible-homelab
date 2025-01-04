@@ -104,6 +104,13 @@
     - item.1.vnet_name is defined
     - item.1.vnet_name == vm_admin_network_name
 
+- include_tasks: get-vm-mounts.yml
+  with_dict: "{{ vm_inventory }}"
+  loop_control:
+    loop_var: vm
+  when:
+    - vm.value.spec.state in ['running', 'created']
+
 - debug:
     msg: "VMs: {{ vm_inventory }}"
 
@@ -116,7 +123,8 @@
     vm_network_connections={{ vm.value.vm_network_connections }}
     eip={{ vm.value.eip if vm.value.eip is defined else omit }}
     eip_address={{ prefix_24 + '.' + vm.value.eip|string if vm.value.eip is defined else omit }}
-    vmfs={{ vm.value.vmfs if vm.value.vmfs is defined else [] }}
+    vmfs={{ vm.value.vmfs | default([]) }}
+    vm_mounts={{ vm.value.vm_mounts | default([]) }}
   with_dict:
     - "{{ vm_inventory }}"
   loop_control:
