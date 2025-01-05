@@ -24,30 +24,22 @@
   become: True
   tasks:
     - set_fact:
-        dnsmasq_containers_conf_production: "{{ dnsmasq_containers_conf | default('') + hostvars[item].dnsmasq_conf | default('') }}"
-      with_items: "{{ groups['container_hosts_production'] }}"
-      when:
-        - stage is not defined
+        dnsmasq_container_hosts: "{{ dnsmasq_container_hosts | default([]) + 
+            [{ 'env': item, 'hosts': groups['container_hosts_' + item] }] }}"
+      loop: "{{ ['production', 'testing', 'staging'] }}"
+
     - set_fact:
-        "dnsmasq_containers_conf_{{ stage }}": "{{ dnsmasq_containers_conf | default('') + hostvars[item].dnsmasq_conf | default('') }}"
-      with_items: "{{ groups['container_hosts_' + stage] }}"
-      when:
-        - stage is defined
+        dnsmasq_containers_conf: {}
+    - set_fact:
+        dnsmasq_containers_conf: "{{ dnsmasq_containers_conf | combine({ item.0.env: dnsmasq_containers_conf[item.0.env] | 
+            default('') + hostvars[item.1].dnsmasq_conf | default('') }) }}"
+      loop: "{{ dnsmasq_container_hosts | subelements('hosts') }}"
+
     - name: dnsmasq container directives
       copy:
-        content: "{{ dnsmasq_containers_conf_production }}"
-        dest: /etc/dnsmasq.d/containers_production.conf
+        content: "{{ item.value }}"
+        dest: /etc/dnsmasq.d/containers_{{ item.key }}.conf
+      loop: "{{ dnsmasq_containers_conf | dict2items }}"
       notify: dnsmasq restart
-      when:
-        - dnsmasq_containers_conf_production is defined
-        - stage is not defined
-    - name: dnsmasq container directives
-      copy:
-        content: "{{ vars['dnsmasq_containers_conf_' + stage] }}"
-        dest: /etc/dnsmasq.d/containers_{{ stage }}.conf
-      notify: dnsmasq restart
-      when:
-        - stage is defined
-        - vars['dnsmasq_containers_conf_' + stage] is defined
   handlers:
     - import_tasks: handlers/main.yml
