@@ -41,5 +41,7 @@
         dest: /etc/dnsmasq.d/containers_{{ item.key }}.conf
       loop: "{{ dnsmasq_containers_conf | dict2items }}"
       notify: dnsmasq restart
+      when:
+        - stage is not defined or item.key == stage
   handlers:
     - import_tasks: handlers/main.yml
