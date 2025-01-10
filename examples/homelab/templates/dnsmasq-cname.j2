@@ -1,0 +1,3 @@
+# dnsmasq configuration to create container cname using {{ ansible_host }} as target
+# Template to be rendered on container host.
+cname={{ item.0.name }}{{ environment_suffix }}.{{ domain }},{{ dns_host }}.{{ domain }}
