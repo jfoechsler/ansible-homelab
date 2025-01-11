@@ -20,6 +20,7 @@
   roles:
     - role-container-host
 
+# Update routers with container config from all stages
 - hosts: routers
   become: True
   tasks:
@@ -42,6 +43,7 @@
       loop: "{{ dnsmasq_containers_conf | dict2items }}"
       notify: dnsmasq restart
       when:
+        # If container hosts only have config for a stage, limit update to only that stage
         - stage is not defined or item.key == stage
   handlers:
     - import_tasks: handlers/main.yml
