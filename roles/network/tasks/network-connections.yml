@@ -72,6 +72,7 @@
   when:
     - connections | length > 0
     - item != 'lo'
+    - item != 'podman0'
     - item is not in desired_connections
     - query('ansible.utils.index_of', nmcli.results, 'eq', true, 'changed') | length == 0
 #  register: delete_connections
