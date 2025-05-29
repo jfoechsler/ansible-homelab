@@ -33,6 +33,14 @@
   shell: dnf -y swap ffmpeg-free ffmpeg --allowerasing
   when: "'ffmpeg-free' in ansible_facts.packages"
 
+- name: workstation release identify
+  shell: dnf -y swap fedora-release-identity-cloud fedora-release-identity-workstation
+  when: "'fedora-release-identity-cloud' in ansible_facts.packages"
+
+- name: jack-audio-connection-kit swap
+  shell: dnf -y swap jack-audio-connection-kit pipewire-jack-audio-connection-kit-libs
+  when: "'jack-audio-connection-kit' in ansible_facts.packages"
+
 - name: Remove installer packages
   shell: dnf -y remove anaconda*
   when: "'anaconda' in ansible_facts.packages"
