@@ -7,4 +7,8 @@
 {% if vars['ansible_' + inside_nic].ipv4.address is defined -%}
 {{ vars['ansible_' + inside_nic].ipv4.address }} {{ ansible_hostname }} {{ ansible_hostname }}.{{ domain }}
 {%- endif -%}
-{%- endif -%}
+{%- endif %}
+
+{% for host in dns_static %}
+{{ host.ipv4 }} {{ host.name }} {{ host.name }}.{{ domain }}
+{% endfor %}

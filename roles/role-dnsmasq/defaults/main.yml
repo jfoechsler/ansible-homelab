@@ -21,3 +21,4 @@ vm_ip_start: 151
 vm_ip_end: 254
 wlan_ip_start: 5
 wlan_ip_end: 50
+dns_static: []
