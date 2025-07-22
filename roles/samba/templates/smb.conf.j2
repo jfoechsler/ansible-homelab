@@ -12,8 +12,10 @@
     browseable = yes
     writable = yes
     path = {{ data0_path }}/share
-[Home]
-    browseable = yes
-    writable = yes
-    path = {{ data0_path }}/home
 {% endif %}
+{% for share in shares %}
+[{{ share.name }}]
+    browseable = yes
+    writable = {{ share.writable | default('yes') }}
+    path = {{ share.path }}
+{% endfor %}
