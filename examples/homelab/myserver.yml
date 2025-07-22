@@ -4,5 +4,6 @@
     - base
     - lvm
     - libvirtd
+    - virt-host-base
   tasks:
     - include_tasks: library/checkupdates.yml

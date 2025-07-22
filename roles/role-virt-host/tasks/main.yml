@@ -1,12 +1,3 @@
-- name: Install packages
-  dnf:
-    name: "
-      genisoimage,
-      python3-lxml,
-      python3-libvirt
-      "
-    state: present
-
 - name: libvirt-guests conf
   template:
     src: libvirt-guests.j2

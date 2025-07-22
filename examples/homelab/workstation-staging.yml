@@ -15,6 +15,7 @@
     - workstation
     - lvm
     - libvirtd
+    - virt-host-base
     - samba
     - firewalld
     - syncthing
