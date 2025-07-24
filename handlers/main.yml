@@ -29,3 +29,6 @@
     timeout: 300
     delay: 30
   listen: restart
+
+- name: libvirtd
+  systemd: name=libvirtd state=restarted
