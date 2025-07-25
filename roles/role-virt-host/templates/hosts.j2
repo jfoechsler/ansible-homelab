@@ -4,8 +4,8 @@
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
 # Old school hosts file sync for private VMs
-{% for host in groups.vms %}
-{% if hostvars[host].admin_ip != '' %}
-{{ hostvars[host].admin_ip }} {{ hostvars[host].dns_host }} {{ hostvars[host].dns_host }}.{{ domain }}
+{% for host, host_values in vm_inventory.items() %}
+{% if host_values.address is defined %}
+{{ host_values.address }} {{ 'vm-' + host }} {{ 'vm-' + host }}.{{ domain }}
 {% endif %}
 {% endfor %}
