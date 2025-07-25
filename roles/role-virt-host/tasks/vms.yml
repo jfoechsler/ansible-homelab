@@ -13,7 +13,7 @@
 #  with_items: "{{ create_vms }}"
 
 - name: Write image to lv
-  shell: xz -dc {{ vm_images }}/{{ vm_image[item.image] }} > /dev/{{ item.vm_volume_group | default(vm_volume_group) }}/vm-{{ item.name }}
+  shell: xz -dc {{ vm_images_path }}/{{ vm_image[item.image] }} > /dev/{{ item.vm_volume_group | default(vm_volume_group) }}/vm-{{ item.name }}
   with_items: "{{ create_vms }}"
 
 - file:
