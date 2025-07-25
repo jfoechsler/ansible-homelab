@@ -58,7 +58,8 @@
   when:
     - vm.value.spec.name in registered_vms.list_vms
 
-- set_fact:
+- name: Create dictionary from XML
+  set_fact:
     "dom_dict_{{ item.vm.value.key }}": "{{ item.stdout | ansible.utils.from_xml }}"
   with_items:
     - "{{ dom_xml.results }}"
@@ -67,7 +68,8 @@
 
 - set_fact:
     create_vms: []
-- set_fact:
+- name: VMs to create
+  set_fact:
     create_vms: "{{ create_vms + [vm.value.spec] }}"
   with_dict: "{{ vm_inventory }}"
   loop_control:
@@ -76,7 +78,7 @@
     - vm.key not in registered_vms.list_vms
     - vm.value.spec.state in ['running', 'created']
 
-- name: Groups based on Vm running state
+- name: Group based on Vm running state
   set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: { 'groups': ['running_vms'] + vm.value.spec.inventory_groups | default([]) } }, recursive=True) }}"
   with_dict: "{{ vm_inventory }}"
