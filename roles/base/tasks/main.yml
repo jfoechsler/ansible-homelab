@@ -1,3 +1,19 @@
+- name: BTRFS volumes
+  community.general.btrfs_subvolume:
+    name: "{{ item.dest }}/{{ item.name }}"
+    filesystem_uuid: "{{ item.filesystem_uuid }}"
+    automount: true
+  with_items: "{{ subvolumes }}"
+
+- name: BTRFS mount
+  mount:
+    name: "{{ item.mount }}"
+    src: "UUID={{ item.filesystem_uuid }}"
+    fstype: btrfs
+    opts: "subvol={{ item.name }},compress=zstd:1"
+    state: mounted
+  with_items: "{{ subvolumes }}"
+
 # Mount VMFS in base role to be available for dnf repo
 - name: VMFS directories
   file:
