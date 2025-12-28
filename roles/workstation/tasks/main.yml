@@ -37,6 +37,13 @@
   shell: dnf -y swap fedora-release-identity-cloud fedora-release-identity-workstation
   when: "'fedora-release-identity-cloud' in ansible_facts.packages"
 
+- name: Remove packages
+  dnf:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - fedora-release-cloud
+
 - name: jack-audio-connection-kit swap
   shell: dnf -y swap jack-audio-connection-kit pipewire-jack-audio-connection-kit-libs
   when: "'jack-audio-connection-kit' in ansible_facts.packages"
