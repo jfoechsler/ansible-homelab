@@ -121,6 +121,7 @@
     dns_host={{ 'vm-' + vm.key }}
     admin_ip={{ vm.value.address | default('') }}
     groups={{ (['vms'] + vm.value.groups | default([])) | join(',') }}
+    use_dnf_staging={{ vm.value.spec.vars.use_dnf_staging if vm.value.spec.vars.use_dnf_staging is defined else omit }}
     dhcp_mac={{ vm.value.dhcp_mac if vm.value.dhcp_mac is defined else omit }}
     vm_network_connections={{ vm.value.vm_network_connections }}
     eip={{ vm.value.eip if vm.value.eip is defined else omit }}
