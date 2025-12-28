@@ -1,0 +1,19 @@
+# is package installed?
+- package_facts:
+    manager: rpm
+
+- name: server release identify
+  shell: dnf -y swap fedora-release-identity-cloud fedora-release-identity-server
+  when: "'fedora-release-identity-cloud' in ansible_facts.packages"
+
+- name: Remove packages
+  dnf:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - fedora-release-cloud
+
+- name: Install server packages
+  dnf:
+    name: "{{ server_packages | join(',') }}"
+    state: present
