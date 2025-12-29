@@ -1,0 +1,19 @@
+{% if vm.spec.network.cloud_init | default(false) -%}
+network:
+  version: 2
+  ethernets:
+{% for network in vm.vm_network_connections %}
+{% if network.cloud_init | default(false) %}
+    # opaque ID for physical interfaces, only referred to by other stanzas
+    id{{ loop.index0 }}:
+      match:
+        macaddress: '{{ network.macaddress }}'
+      dhcp4: false
+      addresses: [{{ network.static_ip }}]
+      gateway4: {{ external_router_ip }}
+      nameservers:
+        search: [{{ domain }}]
+        addresses: [{{ managed_dns_ip }}]
+{% endif %}
+{% endfor %}
+{% endif %}

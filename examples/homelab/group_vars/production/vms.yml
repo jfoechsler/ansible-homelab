@@ -1,4 +1,4 @@
-vm_image:
+vm_images:
   f40: Fedora-Cloud-Base-AmazonEC2.x86_64-40-1.14.raw.xz
   f41: Fedora-Cloud-Base-AmazonEC2-41-1.4.x86_64.raw.xz
 

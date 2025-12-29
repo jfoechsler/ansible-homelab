@@ -15,7 +15,7 @@
 
 - name: Load VM inventory
   set_fact:
-    vm_inventory: "{{ vm_inventory | combine({vm.name: { 'spec': vm, 'key': (vm.name | replace('-', '_')), 'vmfs': [] } }) }}"
+    vm_inventory: "{{ vm_inventory | combine({vm.name: { 'spec': vm, 'key': (vm.name | replace('-', '_')), 'vmfs': [], 'hostname': 'vm-' + vm.name } }) }}"
   with_items: "{{ vms }}"
   loop_control:
     loop_var: vm
@@ -57,6 +57,7 @@
     loop_var: vm
   when:
     - vm.value.spec.name in registered_vms.list_vms
+  changed_when: False
 
 - name: Create dictionary from XML
   set_fact:
@@ -117,8 +118,8 @@
     msg: "VMs: {{ vm_inventory }}"
 
 - add_host: hostname={{ vm.key }}
-    ansible_host={{ 'vm-' + vm.key }}
-    dns_host={{ 'vm-' + vm.key }}
+    ansible_host={{ vm.value.spec.ansible_host | default(vm.value.hostname) }}
+    dns_host={{ vm.value.hostname }}
     admin_ip={{ vm.value.address | default('') }}
     groups={{ (['vms'] + vm.value.groups | default([])) | join(',') }}
     use_dnf_staging={{ vm.value.spec.vars.use_dnf_staging if vm.value.spec.vars.use_dnf_staging is defined else omit }}
@@ -135,8 +136,3 @@
 
 - debug:
     msg: "{{ groups }}"
-
-- name: hosts file
-  template:
-    src: hosts.j2
-    dest: /etc/hosts
