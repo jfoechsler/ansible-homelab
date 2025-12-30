@@ -3,7 +3,7 @@
 - name: lvm data volume
   lvol:
     lv: "vmdata-{{ item.value.name }}"
-    vg: "{{ data_vg }}"
+    vg: "{{ item.volume_group | default(vm_data_volume_group) }}"
     size: "{{ item.value.size }}G"
   with_dict: "{{ vm_data }}"
   when: item.value.host == inventory_hostname

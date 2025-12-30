@@ -45,13 +45,14 @@
   when:
     - vm.value.spec.state in ['running', 'created']
 
-- command: /usr/bin/virsh attach-disk --persistent {{ item.0.value.spec.name }} {{ '/dev/' + data_vg + '/vmdata-' + vm_data[item.1.vm_data].name }} {{ item.1.device }}
+- command: /usr/bin/virsh attach-disk --persistent {{ item.0.value.spec.name }} {{ '/dev/' + vm_data[item.1.vm_data].volume_group | default(vm_data_volume_group) + '/vmdata-' + vm_data[item.1.vm_data].name }} {{ item.1.device }}
   loop: "{{ vm_inventory | dict2items | subelements('value.spec.disks', skip_missing=True) }}"
   when:
-    - item.0.value.spec.state in ['running']
+    - item.0.value.spec.state in ['running', 'created']
     - item.1.vm_data is defined
     - vm_data[item.1.vm_data].vm == item.0.value.spec.name
-    - item.1.device is not in (item.0.value.vm_mounts | map(attribute='device'))
+    - item.1.device is not in (item.0.value.vm_mounts | map(attribute='device')) 
+       or (item.0.value.spec.name in updated_vms | map(attribute='name'))
 
 - name: VMs state
   virt:

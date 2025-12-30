@@ -9,7 +9,7 @@
   when:
     - item.0.vm_data is defined
     - item.1.source['@dev'] is defined
-    - item.1.source['@dev'] == '/dev/' + data_vg + '/vmdata-' + vm_data[item.0.vm_data].name
+    - item.1.source['@dev'] == '/dev/' + vm_data[item.0.vm_data].volume_group | default(vm_data_volume_group) + '/vmdata-' + vm_data[item.0.vm_data].name
 
 - set_fact:
     vm_inventory: "{{ vm_inventory | combine({ vm.key: {'vm_mounts': vm_mounts } | combine(vm_inventory[vm.key]) }) }}"
