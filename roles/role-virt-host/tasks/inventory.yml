@@ -99,13 +99,14 @@
     loop_var: vm
 
 # Get IPs from admin NAT interface
-- include_tasks: get-admin-ips.yml
-  loop: "{{ vm_inventory | dict2items | subelements('value.vm_network_connections', skip_missing=True) }}"
-  when:
-    - item.0.key in running_vms.list_vms
-    - item.0.value.spec.state in ['running', 'created']
-    - item.1.vnet_name is defined
-    - item.1.vnet_name == vm_admin_network_name
+# Deprecate since not multi host compliant
+#- include_tasks: get-admin-ips.yml
+#  loop: "{{ vm_inventory | dict2items | subelements('value.vm_network_connections', skip_missing=True) }}"
+#  when:
+#    - item.0.key in running_vms.list_vms
+#    - item.0.value.spec.state in ['running', 'created']
+#    - item.1.vnet_name is defined
+#    - item.1.vnet_name == vm_admin_network_name
 
 - include_tasks: get-vm-mounts.yml
   with_dict: "{{ vm_inventory }}"
@@ -120,7 +121,6 @@
 - add_host: hostname={{ vm.key }}
     ansible_host={{ vm.value.spec.ansible_host | default(vm.value.hostname) }}
     dns_host={{ vm.value.hostname }}
-    admin_ip={{ vm.value.address | default('') }}
     groups={{ (['vms'] + vm.value.groups | default([])) | join(',') }}
     use_dnf_staging={{ vm.value.spec.vars.use_dnf_staging if vm.value.spec.vars.use_dnf_staging is defined else omit }}
     dhcp_mac={{ vm.value.dhcp_mac if vm.value.dhcp_mac is defined else omit }}
