@@ -129,6 +129,7 @@
     eip_address={{ prefix_24 + '.' + vm.value.eip|string if vm.value.eip is defined else omit }}
     vmfs={{ vm.value.vmfs | default([]) }}
     vm_mounts={{ vm.value.vm_mounts | default([]) }}
+    static_hosts={{ vm.value.spec.static_hosts if vm.value.spec.static_hosts is defined else omit }}
   with_dict:
     - "{{ vm_inventory }}"
   loop_control:

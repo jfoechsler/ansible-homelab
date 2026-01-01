@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# Old school hosts file sync
+{% for vm in groups.vms %}
+{% if hostvars[vm].static_hosts is defined and hostvars[vm].eip_address is defined %}
+{{ hostvars[vm].eip_address }} {{ hostvars[vm].static_hosts | join(' ') }}.{{ domain }}
+{% endif %}
+{% endfor %}

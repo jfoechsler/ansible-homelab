@@ -17,3 +17,8 @@
   dnf:
     name: "{{ server_packages | join(',') }}"
     state: present
+
+- name: hosts file fallback
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
