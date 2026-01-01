@@ -1,8 +1,8 @@
 #cloud-config
 ssh_pwauth: False
 preserve_hostname: {% if item.0.network.static_hostname | default(false) | bool -%}false
-hostname: {{ hostvars[item.0.name].dns_host }}
-fqdn: {{ hostvars[item.0.name].dns_host }}.{{ domain }}
+hostname: {{ hostvars[item.0.name].inventory_hostname }}
+fqdn: {{ hostvars[item.0.name].inventory_hostname }}.{{ domain }}
 {%- else -%}true
 {% endif %}
 

@@ -25,7 +25,6 @@
   when:
     - group is defined
     - groups[group] is defined
-    - hostvars[item].static_ip is not defined
     - hostvars[item].dhcp_mac is defined
 
 - name: List of 'host,mac' items desired based on reservations

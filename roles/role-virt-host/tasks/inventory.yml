@@ -118,9 +118,8 @@
 - debug:
     msg: "VMs: {{ vm_inventory }}"
 
-- add_host: hostname={{ vm.key }}
+- add_host: hostname={{ vm.value.hostname }}
     ansible_host={{ vm.value.spec.ansible_host | default(vm.value.hostname) }}
-    dns_host={{ vm.value.hostname }}
     groups={{ (['vms'] + vm.value.groups | default([])) | join(',') }}
     use_dnf_staging={{ vm.value.spec.vars.use_dnf_staging if vm.value.spec.vars.use_dnf_staging is defined else omit }}
     dhcp_mac={{ vm.value.dhcp_mac if vm.value.dhcp_mac is defined else omit }}
@@ -134,6 +133,7 @@
     - "{{ vm_inventory }}"
   loop_control:
     loop_var: vm
+  changed_when: False
 
 - debug:
     msg: "{{ groups }}"

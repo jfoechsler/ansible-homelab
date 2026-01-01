@@ -2,6 +2,6 @@
 
 {% for dhcp_host in leases.vms %}
 {% if hostvars[(dhcp_host.name | split(','))[0]] is defined %}
-dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].dns_host }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
+dhcp-host={{ (dhcp_host.name | split(','))[1] }},{{ hostvars[(dhcp_host.name | split(','))[0]].inventory_hostname }}.{{ domain }},{{ prefix_24 }}.{{ dhcp_host.value }}
 {% endif %}
 {% endfor %}
