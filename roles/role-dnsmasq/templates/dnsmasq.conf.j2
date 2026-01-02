@@ -8,6 +8,9 @@ domain={{ domain }}
 local=/{{ domain }}/
 user=dnsmasq
 group=dnsmasq
+filterwin2k
+dhcp-name-match=set:wpad-ignore,wpad
+dhcp-ignore-names=tag:wpad-ignore
 
 interface={{ inside_nic }}
 except-interface=lo
@@ -26,5 +29,8 @@ server={{ server }}
 dhcp-option=option:router,{{ router_features_merged.dhcpd.use_external_router }}
 {% endif %}
 
+{% if router_features_merged.dns.client_servers is defined %}
+dhcp-option=option:dns-server,{{ router_features_merged.dns.client_servers | join(',') }}
+{% endif %}
 
 conf-dir=/etc/dnsmasq.d/,*.conf
