@@ -30,11 +30,12 @@
     dest: /etc/samba/smb.conf
   notify: smb reload
 
+# Run without nmbd
 - name: Nmb service
   systemd:
     name: "nmb"
-    state: "started"
-    enabled: "yes"
+    state: "stopped"
+    enabled: "no"
 
 - name: Smb service
   systemd:
